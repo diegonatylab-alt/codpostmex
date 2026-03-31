@@ -1,0 +1,385 @@
+import { Hono } from 'hono';
+import { cache } from 'hono/cache';
+import {
+  homePage,
+  estadoPage,
+  estadosListPage,
+  municipioPage,
+  codigoPostalPage,
+  notFoundPage,
+  avisoLegalPage,
+} from './templates';
+import { SITE_URL } from './config';
+
+type Bindings = {
+  DB: D1Database;
+};
+
+const app = new Hono<{ Bindings: Bindings }>();
+
+// ============================================================
+// Cache middleware — cachea respuestas HTML por 24h en Cloudflare Edge
+// ============================================================
+app.use(
+  '*',
+  cache({
+    cacheName: 'codigos-postales',
+    cacheControl: 'public, max-age=86400, s-maxage=86400',
+  })
+);
+
+// ============================================================
+// HOME
+// ============================================================
+app.get('/', async (c) => {
+  const estados = await c.env.DB.prepare(`
+    SELECT e.nombre, e.slug, COUNT(DISTINCT cp.codigo_postal) as count
+    FROM estados e
+    LEFT JOIN codigos_postales cp ON cp.clave_estado = e.clave
+    GROUP BY e.clave
+    ORDER BY e.nombre
+  `).all();
+
+  return c.html(
+    homePage(
+      estados.results.map((e: any) => ({
+        nombre: e.nombre,
+        slug: e.slug,
+        count: e.count || 0,
+      }))
+    )
+  );
+});
+
+// ============================================================
+// LISTA DE ESTADOS
+// ============================================================
+app.get('/estados', async (c) => {
+  const estados = await c.env.DB.prepare(`
+    SELECT e.nombre, e.slug, COUNT(DISTINCT cp.codigo_postal) as count
+    FROM estados e
+    LEFT JOIN codigos_postales cp ON cp.clave_estado = e.clave
+    GROUP BY e.clave
+    ORDER BY e.nombre
+  `).all();
+
+  return c.html(
+    estadosListPage(
+      estados.results.map((e: any) => ({
+        nombre: e.nombre,
+        slug: e.slug,
+        count: e.count || 0,
+      }))
+    )
+  );
+});
+
+// ============================================================
+// ESTADO (lista de municipios)
+// ============================================================
+app.get('/estado/:slug', async (c) => {
+  const slug = c.req.param('slug');
+
+  const estado = await c.env.DB.prepare(
+    'SELECT clave, nombre, slug FROM estados WHERE slug = ?'
+  )
+    .bind(slug)
+    .first();
+
+  if (!estado) return c.html(notFoundPage(), 404);
+
+  const municipios = await c.env.DB.prepare(`
+    SELECT m.nombre, m.slug, COUNT(DISTINCT cp.codigo_postal) as count
+    FROM municipios m
+    LEFT JOIN codigos_postales cp ON cp.clave_estado = m.clave_estado AND cp.clave_municipio = m.clave_municipio
+    WHERE m.clave_estado = ?
+    GROUP BY m.clave_estado, m.clave_municipio
+    ORDER BY m.nombre
+  `)
+    .bind(estado.clave)
+    .all();
+
+  return c.html(
+    estadoPage(
+      { nombre: estado.nombre as string, slug: estado.slug as string },
+      municipios.results.map((m: any) => ({
+        nombre: m.nombre,
+        slug: m.slug,
+        count: m.count || 0,
+      }))
+    )
+  );
+});
+
+// ============================================================
+// MUNICIPIO (lista de colonias/CPs)
+// ============================================================
+app.get('/estado/:estadoSlug/:municipioSlug', async (c) => {
+  const estadoSlug = c.req.param('estadoSlug');
+  const municipioSlug = c.req.param('municipioSlug');
+
+  const estado = await c.env.DB.prepare(
+    'SELECT clave, nombre, slug FROM estados WHERE slug = ?'
+  )
+    .bind(estadoSlug)
+    .first();
+
+  if (!estado) return c.html(notFoundPage(), 404);
+
+  const municipio = await c.env.DB.prepare(
+    'SELECT nombre, slug FROM municipios WHERE clave_estado = ? AND slug = ?'
+  )
+    .bind(estado.clave, municipioSlug)
+    .first();
+
+  if (!municipio) return c.html(notFoundPage(), 404);
+
+  const codigos = await c.env.DB.prepare(`
+    SELECT codigo_postal, colonia, tipo_asentamiento, zona
+    FROM codigos_postales
+    WHERE clave_estado = ? AND municipio = ?
+    ORDER BY codigo_postal, colonia
+  `)
+    .bind(estado.clave, municipio.nombre)
+    .all();
+
+  return c.html(
+    municipioPage(
+      { nombre: estado.nombre as string, slug: estado.slug as string },
+      { nombre: municipio.nombre as string, slug: municipio.slug as string },
+      codigos.results as any[]
+    )
+  );
+});
+
+// ============================================================
+// CÓDIGO POSTAL individual
+// ============================================================
+app.get('/codigo-postal/:cp', async (c) => {
+  const cp = c.req.param('cp');
+
+  // Validar que sea un CP numérico de 5 dígitos
+  if (!/^\d{5}$/.test(cp)) return c.html(notFoundPage(), 404);
+
+  const colonias = await c.env.DB.prepare(`
+    SELECT colonia, tipo_asentamiento, municipio, estado, ciudad, zona, clave_estado, clave_municipio
+    FROM codigos_postales
+    WHERE codigo_postal = ?
+    ORDER BY colonia
+  `)
+    .bind(cp)
+    .all();
+
+  if (colonias.results.length === 0) return c.html(notFoundPage(), 404);
+
+  // CPs cercanos (numérico +/- rango)
+  const cpNum = parseInt(cp);
+  const nearbyResult = await c.env.DB.prepare(`
+    SELECT DISTINCT codigo_postal 
+    FROM codigos_postales 
+    WHERE codigo_postal != ? 
+      AND CAST(codigo_postal AS INTEGER) BETWEEN ? AND ?
+    ORDER BY codigo_postal
+    LIMIT 10
+  `)
+    .bind(cp, cpNum - 50, cpNum + 50)
+    .all();
+
+  const nearby = nearbyResult.results.map((r: any) => r.codigo_postal);
+
+  // Obtener slugs para breadcrumbs
+  const first: any = colonias.results[0];
+  const estadoRow = await c.env.DB.prepare(
+    'SELECT slug FROM estados WHERE clave = ?'
+  )
+    .bind(first.clave_estado)
+    .first();
+
+  const municipioRow = await c.env.DB.prepare(
+    'SELECT slug FROM municipios WHERE clave_estado = ? AND clave_municipio = ?'
+  )
+    .bind(first.clave_estado, first.clave_municipio)
+    .first();
+
+  return c.html(
+    codigoPostalPage(
+      cp,
+      colonias.results as any[],
+      nearby,
+      (estadoRow?.slug as string) || '',
+      (municipioRow?.slug as string) || ''
+    )
+  );
+});
+
+// ============================================================
+// API DE BÚSQUEDA (para el buscador del home)
+// ============================================================
+app.get('/api/buscar', async (c) => {
+  const q = (c.req.query('q') || '').trim();
+
+  if (q.length < 2) {
+    return c.json({ results: [] });
+  }
+
+  let results;
+
+  if (/^\d+$/.test(q)) {
+    // Búsqueda por código postal
+    results = await c.env.DB.prepare(`
+      SELECT DISTINCT codigo_postal, colonia, municipio, estado
+      FROM codigos_postales
+      WHERE codigo_postal LIKE ?
+      ORDER BY codigo_postal
+      LIMIT 20
+    `)
+      .bind(q + '%')
+      .all();
+  } else {
+    // Búsqueda por nombre de colonia o municipio
+    results = await c.env.DB.prepare(`
+      SELECT DISTINCT codigo_postal, colonia, municipio, estado
+      FROM codigos_postales
+      WHERE colonia LIKE ? OR municipio LIKE ?
+      ORDER BY colonia
+      LIMIT 20
+    `)
+      .bind('%' + q + '%', '%' + q + '%')
+      .all();
+  }
+
+  return c.json({ results: results.results });
+});
+
+// ============================================================
+// AVISO LEGAL
+// ============================================================
+app.get('/aviso-legal', (c) => {
+  return c.html(avisoLegalPage());
+});
+
+// ============================================================
+// ROBOTS.TXT
+// ============================================================
+app.get('/robots.txt', (c) => {
+  return c.text(`User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: ${SITE_URL}/sitemap-index.xml`);
+});
+
+// ============================================================
+// SITEMAP INDEX
+// ============================================================
+app.get('/sitemap-index.xml', async (c) => {
+  const estados = await c.env.DB.prepare(
+    'SELECT slug FROM estados ORDER BY nombre'
+  ).all();
+
+  const sitemaps = estados.results
+    .map(
+      (e: any) =>
+        `  <sitemap>
+    <loc>${SITE_URL}/sitemaps/${e.slug}.xml</loc>
+  </sitemap>`
+    )
+    .join('\n');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${SITE_URL}/sitemaps/pages.xml</loc>
+  </sitemap>
+${sitemaps}
+</sitemapindex>`;
+
+  return c.newResponse(xml, 200, {
+    'Content-Type': 'application/xml',
+  });
+});
+
+// ============================================================
+// SITEMAP de páginas estáticas
+// ============================================================
+app.get('/sitemaps/pages.xml', async (c) => {
+  const estados = await c.env.DB.prepare(
+    'SELECT slug FROM estados ORDER BY nombre'
+  ).all();
+
+  const urls = [
+    `  <url><loc>${SITE_URL}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>`,
+    `  <url><loc>${SITE_URL}/estados</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>`,
+    ...estados.results.map(
+      (e: any) =>
+        `  <url><loc>${SITE_URL}/estado/${e.slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`
+    ),
+  ];
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.join('\n')}
+</urlset>`;
+
+  return c.newResponse(xml, 200, {
+    'Content-Type': 'application/xml',
+  });
+});
+
+// ============================================================
+// SITEMAP por estado (municipios + CPs)
+// ============================================================
+app.get('/sitemaps/:estadoSlug.xml', async (c) => {
+  const estadoSlug = c.req.param('estadoSlug');
+
+  const estado = await c.env.DB.prepare(
+    'SELECT clave, slug FROM estados WHERE slug = ?'
+  )
+    .bind(estadoSlug)
+    .first();
+
+  if (!estado) return c.notFound();
+
+  // Municipios
+  const municipios = await c.env.DB.prepare(
+    'SELECT slug FROM municipios WHERE clave_estado = ?'
+  )
+    .bind(estado.clave)
+    .all();
+
+  // CPs únicos del estado
+  const cps = await c.env.DB.prepare(
+    'SELECT DISTINCT codigo_postal FROM codigos_postales WHERE clave_estado = ? ORDER BY codigo_postal'
+  )
+    .bind(estado.clave)
+    .all();
+
+  const urls = [
+    ...municipios.results.map(
+      (m: any) =>
+        `  <url><loc>${SITE_URL}/estado/${estadoSlug}/${m.slug}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`
+    ),
+    ...cps.results.map(
+      (cp: any) =>
+        `  <url><loc>${SITE_URL}/codigo-postal/${cp.codigo_postal}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>`
+    ),
+  ];
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.join('\n')}
+</urlset>`;
+
+  return c.newResponse(xml, 200, {
+    'Content-Type': 'application/xml',
+  });
+});
+
+// ============================================================
+// 404 catch-all
+// ============================================================
+app.notFound((c) => {
+  return c.html(notFoundPage(), 404);
+});
+
+export default app;
