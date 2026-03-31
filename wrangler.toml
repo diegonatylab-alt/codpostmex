@@ -1,0 +1,13 @@
+name = "codigos-postales-mx"
+main = "src/index.ts"
+compatibility_date = "2024-06-20"
+
+# Deploy automático desde GitHub:
+# Cada push a "main" hace deploy automático si conectás el repo en Cloudflare Dashboard.
+# Dashboard > Workers & Pages > Create > Connect to Git > seleccionar repo
+
+# Después de ejecutar `npm run db:create`, reemplazá YOUR_DATABASE_ID con el ID real
+[[d1_databases]]
+binding = "DB"
+database_name = "codigos-postales-db"
+database_id = "YOUR_DATABASE_ID"

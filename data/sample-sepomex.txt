@@ -1,0 +1,81 @@
+d_codigo|d_asenta|d_tipo_asenta|D_mnpio|d_estado|d_ciudad|d_CP|c_estado|c_oficina|c_CP|c_tipo_asenta|c_mnpio|id_asenta_cpcons|d_zona
+01000|San Marcos|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|01001|01|01001||09|001|0001|Urbano
+01010|Colinas del Río|Fraccionamiento|Aguascalientes|Aguascalientes|Aguascalientes|01001|01|01001||21|001|0002|Urbano
+01020|Jardines de la Cruz|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|01001|01|01001||09|001|0003|Urbano
+01030|Héroes|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|01001|01|01001||09|001|0004|Urbano
+01040|La Estación|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|01001|01|01001||09|001|0005|Urbano
+01050|Las Flores|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|01001|01|01001||09|001|0006|Urbano
+20000|Centro|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|20001|01|20001||09|001|0007|Urbano
+20010|Las Américas|Fraccionamiento|Aguascalientes|Aguascalientes|Aguascalientes|20001|01|20001||21|001|0008|Urbano
+20020|Jardines del Parque|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|20001|01|20001||09|001|0009|Urbano
+20030|La Salud|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|20001|01|20001||09|001|0010|Urbano
+20040|El Encino|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|20001|01|20001||09|001|0011|Urbano
+20050|Lindavista|Fraccionamiento|Aguascalientes|Aguascalientes|Aguascalientes|20001|01|20001||21|001|0012|Urbano
+20100|Insurgentes|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|20001|01|20001||09|001|0013|Urbano
+20110|Morelos|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|20001|01|20001||09|001|0014|Urbano
+20120|San Cayetano|Colonia|Aguascalientes|Aguascalientes|Aguascalientes|20001|01|20001||09|001|0015|Urbano
+20200|Jesús Gómez Portugal|Pueblo|Jesús María|Aguascalientes|Aguascalientes|20200|01|20200||28|002|0016|Urbano
+20210|San Antonio de los Horcones|Ranchería|Jesús María|Aguascalientes||20200|01|20200||29|002|0017|Rural
+20250|Centro|Colonia|Jesús María|Aguascalientes|Jesús María|20250|01|20250||09|002|0018|Urbano
+20260|Jardines de Jesús María|Fraccionamiento|Jesús María|Aguascalientes|Jesús María|20250|01|20250||21|002|0019|Urbano
+20300|Villa Hidalgo|Pueblo|Rincón de Romos|Aguascalientes||20300|01|20300||28|003|0020|Rural
+20340|Centro|Colonia|Rincón de Romos|Aguascalientes|Rincón de Romos|20340|01|20340||09|003|0021|Urbano
+06000|Centro|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0001|Urbano
+06010|Tabacalera|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0002|Urbano
+06020|Guerrero|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0003|Urbano
+06030|Nonoalco Tlatelolco|Unidad habitacional|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||02|015|0004|Urbano
+06040|Santa María la Ribera|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0005|Urbano
+06050|San Rafael|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0006|Urbano
+06060|Buenavista|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0007|Urbano
+06100|Roma Norte|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0008|Urbano
+06140|Condesa|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0009|Urbano
+06170|Doctores|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0010|Urbano
+06200|Roma Sur|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0011|Urbano
+06300|Hipódromo|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0012|Urbano
+06350|Hipódromo Condesa|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0013|Urbano
+06400|Juárez|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0014|Urbano
+06500|Cuauhtémoc|Colonia|Cuauhtémoc|Ciudad de México|Ciudad de México|06002|09|06002||09|015|0015|Urbano
+06600|Ciudad de los Deportes|Colonia|Benito Juárez|Ciudad de México|Ciudad de México|03001|09|03001||09|014|0001|Urbano
+06700|Nápoles|Colonia|Benito Juárez|Ciudad de México|Ciudad de México|03001|09|03001||09|014|0002|Urbano
+06760|Del Valle Norte|Colonia|Benito Juárez|Ciudad de México|Ciudad de México|03001|09|03001||09|014|0003|Urbano
+06780|Del Valle Sur|Colonia|Benito Juárez|Ciudad de México|Ciudad de México|03001|09|03001||09|014|0004|Urbano
+06800|Narvarte Poniente|Colonia|Benito Juárez|Ciudad de México|Ciudad de México|03001|09|03001||09|014|0005|Urbano
+06880|Narvarte Oriente|Colonia|Benito Juárez|Ciudad de México|Ciudad de México|03001|09|03001||09|014|0006|Urbano
+11000|Lomas de Chapultepec I Sección|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0001|Urbano
+11010|Lomas de Chapultepec II Sección|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0002|Urbano
+11040|Polanco I Sección|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0003|Urbano
+11050|Polanco II Sección|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0004|Urbano
+11100|Polanco III Sección|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0005|Urbano
+11200|Lomas de Sotelo|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0006|Urbano
+11300|Chapultepec Morales|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0007|Urbano
+11400|Bosque de las Lomas|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0008|Urbano
+11500|Anzures|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0009|Urbano
+11520|Granada|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0010|Urbano
+11560|Verónica Anzures|Colonia|Miguel Hidalgo|Ciudad de México|Ciudad de México|11001|09|11001||09|016|0011|Urbano
+64000|Centro|Colonia|Monterrey|Nuevo León|Monterrey|64001|19|64001||09|039|0001|Urbano
+64010|Obispado|Colonia|Monterrey|Nuevo León|Monterrey|64001|19|64001||09|039|0002|Urbano
+64020|Chepe Vera|Colonia|Monterrey|Nuevo León|Monterrey|64001|19|64001||09|039|0003|Urbano
+64030|Mitras Centro|Colonia|Monterrey|Nuevo León|Monterrey|64001|19|64001||09|039|0004|Urbano
+64040|Mitras Norte|Colonia|Monterrey|Nuevo León|Monterrey|64001|19|64001||09|039|0005|Urbano
+64060|Chepevera|Colonia|Monterrey|Nuevo León|Monterrey|64001|19|64001||09|039|0006|Urbano
+64100|Cumbres|Colonia|Monterrey|Nuevo León|Monterrey|64001|19|64001||09|039|0007|Urbano
+64200|Del Paseo Residencial|Colonia|Monterrey|Nuevo León|Monterrey|64001|19|64001||09|039|0008|Urbano
+64290|San Jerónimo|Colonia|Monterrey|Nuevo León|Monterrey|64001|19|64001||09|039|0009|Urbano
+64300|Valle de San Ángel|Fraccionamiento|San Pedro Garza García|Nuevo León|Monterrey|66260|19|66260||21|019|0001|Urbano
+64320|Del Valle|Colonia|San Pedro Garza García|Nuevo León|Monterrey|66260|19|66260||09|019|0002|Urbano
+66200|Centro|Colonia|San Pedro Garza García|Nuevo León|San Pedro Garza García|66260|19|66260||09|019|0003|Urbano
+66210|San Agustín|Colonia|San Pedro Garza García|Nuevo León|San Pedro Garza García|66260|19|66260||09|019|0004|Urbano
+66220|Valle de San Ángel|Fraccionamiento|San Pedro Garza García|Nuevo León|San Pedro Garza García|66260|19|66260||21|019|0005|Urbano
+44100|Centro|Colonia|Guadalajara|Jalisco|Guadalajara|44101|14|44101||09|039|0001|Urbano
+44110|Americana|Colonia|Guadalajara|Jalisco|Guadalajara|44101|14|44101||09|039|0002|Urbano
+44130|Providencia|Fraccionamiento|Guadalajara|Jalisco|Guadalajara|44101|14|44101||21|039|0003|Urbano
+44140|Ladrón de Guevara|Colonia|Guadalajara|Jalisco|Guadalajara|44101|14|44101||09|039|0004|Urbano
+44150|Arcos Vallarta|Colonia|Guadalajara|Jalisco|Guadalajara|44101|14|44101||09|039|0005|Urbano
+44160|Monraz|Colonia|Guadalajara|Jalisco|Guadalajara|44101|14|44101||09|039|0006|Urbano
+44200|Obrera|Colonia|Guadalajara|Jalisco|Guadalajara|44101|14|44101||09|039|0007|Urbano
+44600|Santa Tere|Colonia|Guadalajara|Jalisco|Guadalajara|44101|14|44101||09|039|0008|Urbano
+44620|Mexicaltzingo|Colonia|Guadalajara|Jalisco|Guadalajara|44101|14|44101||09|039|0009|Urbano
+45000|Centro|Colonia|Zapopan|Jalisco|Zapopan|45001|14|45001||09|120|0001|Urbano
+45010|Colinas de San Javier|Fraccionamiento|Zapopan|Jalisco|Zapopan|45001|14|45001||21|120|0002|Urbano
+45050|Country Club|Fraccionamiento|Zapopan|Jalisco|Zapopan|45001|14|45001||21|120|0003|Urbano
+45110|Chapalita|Fraccionamiento|Zapopan|Jalisco|Zapopan|45001|14|45001||21|120|0004|Urbano
