@@ -1,0 +1,22 @@
+{
+  "name": "codigos-postales-mx",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create codigos-postales-db",
+    "db:migrate": "wrangler d1 execute codigos-postales-db --local --file=./schema.sql",
+    "db:migrate:remote": "wrangler d1 execute codigos-postales-db --remote --file=./schema.sql",
+    "db:seed": "node scripts/seed.js",
+    "db:seed:remote": "node scripts/seed.js --remote"
+  },
+  "dependencies": {
+    "hono": "^4.4.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240620.0",
+    "wrangler": "^3.60.0",
+    "typescript": "^5.5.0"
+  }
+}
