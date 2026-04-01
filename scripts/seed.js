@@ -1,15 +1,13 @@
 /**
  * Script para importar datos de SEPOMEX a Cloudflare D1
  * 
+ * Soporta dos formatos:
+ *   - CSV: idEstado,estado,idMunicipio,municipio,ciudad,zona,cp,asentamiento,tipo
+ *   - Pipe: d_codigo|d_asenta|d_tipo_asenta|D_mnpio|d_estado|d_ciudad|...
+ * 
  * Uso:
  *   node scripts/seed.js            (local)
  *   node scripts/seed.js --remote   (producción)
- * 
- * Antes de usar, descargá el archivo completo de SEPOMEX desde:
- * https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/CodigoPostal_Descarga.aspx
- * 
- * Renombrá el archivo descargado a "CPdescarga.txt" y colocalo en la carpeta /data/
- * El archivo de muestra "sample-sepomex.txt" se usa si no existe el archivo completo.
  */
 
 const { execSync } = require('child_process');
@@ -27,11 +25,11 @@ const sampleFile = path.join(dataDir, 'sample-sepomex.txt');
 let dataFile;
 if (fs.existsSync(fullFile)) {
   dataFile = fullFile;
-  console.log('Usando archivo COMPLETO de SEPOMEX: CPdescarga.txt');
+  console.log('Usando archivo COMPLETO: CPdescarga.txt');
 } else if (fs.existsSync(sampleFile)) {
   dataFile = sampleFile;
   console.log('Usando archivo de MUESTRA: sample-sepomex.txt');
-  console.log('Para datos completos, descargá CPdescarga.txt de SEPOMEX.');
+  console.log('Para datos completos, colocá CPdescarga.txt en /data/');
 } else {
   console.error('No se encontró ningún archivo de datos en /data/');
   process.exit(1);
@@ -51,45 +49,115 @@ function escapeSQL(str) {
   return str.replace(/'/g, "''");
 }
 
+/**
+ * Parsear una línea CSV respetando comillas
+ * "valor con,coma",otro → ['valor con,coma', 'otro']
+ */
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
 // Leer y parsear el archivo
 const content = fs.readFileSync(dataFile, 'utf-8');
 const lines = content.split('\n').filter(l => l.trim());
 
-// Saltar la primera línea (header)
+// Detectar formato: CSV (comas) o Pipe (|)
 const header = lines[0];
-const dataLines = lines.slice(1);
+const isCSV = header.includes('idEstado') || (!header.includes('|') && header.includes(','));
+const isPipe = header.includes('|');
 
+console.log(`Formato detectado: ${isCSV ? 'CSV' : isPipe ? 'Pipe (SEPOMEX original)' : 'Desconocido'}`);
+
+const dataLines = lines.slice(1);
 console.log(`Procesando ${dataLines.length} registros...`);
+
+// Pad para clave_estado (ej: 1 → "01", 9 → "09")
+function padEstado(id) {
+  return String(id).padStart(2, '0');
+}
+function padMunicipio(id) {
+  return String(id).padStart(3, '0');
+}
 
 // Agrupar por municipio para la tabla de municipios
 const municipios = new Map();
-const batchSize = 50; // SQL statements por batch
+const batchSize = 50;
 const batches = [];
 let currentBatch = [];
+let skipped = 0;
 
 for (const line of dataLines) {
-  const parts = line.split('|');
-  if (parts.length < 14) continue;
+  let codigo_postal, colonia, tipo_asentamiento, municipio_nombre, estado_nombre, ciudad, clave_estado, clave_municipio, zona;
 
-  const [
-    d_codigo, d_asenta, d_tipo_asenta, D_mnpio, d_estado, d_ciudad,
-    d_CP, c_estado, c_oficina, c_CP, c_tipo_asenta, c_mnpio,
-    id_asenta_cpcons, d_zona
-  ] = parts.map(p => p.trim());
+  if (isCSV) {
+    // Formato CSV: idEstado,estado,idMunicipio,municipio,ciudad,zona,cp,asentamiento,tipo
+    const parts = parseCSVLine(line);
+    if (parts.length < 9) { skipped++; continue; }
+
+    const [idEstado, estado, idMunicipio, municipio, ciudadVal, zonaVal, cp, asentamiento, tipo] = parts;
+
+    if (!cp || !asentamiento) { skipped++; continue; }
+
+    codigo_postal = cp.trim();
+    colonia = asentamiento.trim();
+    tipo_asentamiento = (tipo || '').trim();
+    municipio_nombre = (municipio || '').trim();
+    estado_nombre = (estado || '').trim();
+    ciudad = (ciudadVal || '').trim();
+    clave_estado = padEstado(idEstado);
+    clave_municipio = padMunicipio(idMunicipio);
+    zona = (zonaVal || '').trim();
+  } else if (isPipe) {
+    // Formato Pipe original de SEPOMEX
+    const parts = line.split('|');
+    if (parts.length < 14) { skipped++; continue; }
+
+    const [d_codigo, d_asenta, d_tipo_asenta, D_mnpio, d_estado, d_ciudad,
+      d_CP, c_estado, c_oficina, c_CP, c_tipo_asenta, c_mnpio,
+      id_asenta_cpcons, d_zona] = parts.map(p => p.trim());
+
+    codigo_postal = d_codigo;
+    colonia = d_asenta;
+    tipo_asentamiento = d_tipo_asenta;
+    municipio_nombre = D_mnpio;
+    estado_nombre = d_estado;
+    ciudad = d_ciudad;
+    clave_estado = c_estado;
+    clave_municipio = c_mnpio;
+    zona = d_zona;
+  } else {
+    skipped++;
+    continue;
+  }
 
   // Registrar municipio
-  const munKey = `${c_estado}-${c_mnpio}`;
+  const munKey = `${clave_estado}-${clave_municipio}`;
   if (!municipios.has(munKey)) {
     municipios.set(munKey, {
-      clave_estado: c_estado,
-      clave_municipio: c_mnpio,
-      nombre: D_mnpio,
-      slug: slugify(D_mnpio)
+      clave_estado,
+      clave_municipio,
+      nombre: municipio_nombre,
+      slug: slugify(municipio_nombre)
     });
   }
 
   // INSERT para código postal
-  const sql = `INSERT INTO codigos_postales (codigo_postal, colonia, tipo_asentamiento, municipio, estado, ciudad, clave_estado, clave_municipio, zona) VALUES ('${escapeSQL(d_codigo)}', '${escapeSQL(d_asenta)}', '${escapeSQL(d_tipo_asenta)}', '${escapeSQL(D_mnpio)}', '${escapeSQL(d_estado)}', '${escapeSQL(d_ciudad)}', '${escapeSQL(c_estado)}', '${escapeSQL(c_mnpio)}', '${escapeSQL(d_zona)}');`;
+  const sql = `INSERT INTO codigos_postales (codigo_postal, colonia, tipo_asentamiento, municipio, estado, ciudad, clave_estado, clave_municipio, zona) VALUES ('${escapeSQL(codigo_postal)}', '${escapeSQL(colonia)}', '${escapeSQL(tipo_asentamiento)}', '${escapeSQL(municipio_nombre)}', '${escapeSQL(estado_nombre)}', '${escapeSQL(ciudad)}', '${escapeSQL(clave_estado)}', '${escapeSQL(clave_municipio)}', '${escapeSQL(zona)}');`;
 
   currentBatch.push(sql);
 
@@ -152,4 +220,5 @@ fs.rmSync(tmpDir, { recursive: true, force: true });
 
 console.log('\n¡Importación completada!');
 console.log(`  - ${municipios.size} municipios`);
-console.log(`  - ${dataLines.length} registros de códigos postales`);
+console.log(`  - ${dataLines.length - skipped} registros de códigos postales importados`);
+if (skipped > 0) console.log(`  - ${skipped} líneas omitidas (formato incorrecto o vacías)`);
