@@ -10,4 +10,4 @@ compatibility_date = "2024-06-20"
 [[d1_databases]]
 binding = "DB"
 database_name = "codigos-postales-db"
-database_id = "YOUR_DATABASE_ID"
+database_id = "cb4f434c-6e21-444c-a0f2-f39a6336d38a"
