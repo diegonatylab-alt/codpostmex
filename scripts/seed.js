@@ -190,7 +190,7 @@ console.log(`Insertando ${municipios.size} municipios...`);
 const munFile = path.join(tmpDir, 'municipios.sql');
 fs.writeFileSync(munFile, munInserts.join('\n'));
 try {
-  execSync(`npx wrangler d1 execute codigos-postales-db ${remoteFlag} --file="${munFile}"`, {
+  execSync(`npx wrangler d1 execute codigos-postales-db ${remoteFlag} --yes --file="${munFile}"`, {
     stdio: 'inherit',
     cwd: path.join(__dirname, '..')
   });
@@ -205,7 +205,7 @@ for (let i = 0; i < batches.length; i++) {
   fs.writeFileSync(batchFile, batches[i].join('\n'));
   
   try {
-    execSync(`npx wrangler d1 execute codigos-postales-db ${remoteFlag} --file="${batchFile}"`, {
+    execSync(`npx wrangler d1 execute codigos-postales-db ${remoteFlag} --yes --file="${batchFile}"`, {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..')
     });
