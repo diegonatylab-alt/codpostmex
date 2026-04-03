@@ -23,7 +23,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 app.use(
   '*',
   cache({
-    cacheName: 'codigos-postales',
+    cacheName: 'buscarcpmexico-v2',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
