@@ -1,4 +1,4 @@
-# 📮 Códigos Postales MX
+# 📮 Buscar CP México
 
 Sitio web de consulta de códigos postales de México, optimizado para SEO y monetización con AdSense.
 
