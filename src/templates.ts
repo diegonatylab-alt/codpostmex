@@ -71,6 +71,7 @@ function layout(opts: {
     .tag{display:inline-block;padding:2px 8px;background:#e8f0fe;color:#1967d2;border-radius:12px;font-size:.8rem;margin:2px}
     .ad-slot{background:#f1f3f4;border:1px dashed #dadce0;padding:20px;text-align:center;color:#9aa0a6;font-size:.85rem;margin:16px 0;min-height:90px;border-radius:8px}
     .ad-slot-banner{background:#f1f3f4;border:1px dashed #dadce0;text-align:center;color:#9aa0a6;font-size:.85rem;margin:12px 0;height:90px;max-height:90px;overflow:hidden;border-radius:8px;display:flex;align-items:center;justify-content:center}
+    .home-top-ad{margin-top:8px}
     footer{background:#202124;color:#9aa0a6;padding:24px 0;margin-top:40px;font-size:.85rem;text-align:center}
     footer a{color:#8ab4f8}
     .cp-big{font-size:2.5rem;font-weight:700;color:#1a73e8}
@@ -81,7 +82,11 @@ function layout(opts: {
     .nearby{margin-top:16px}
     .nearby a{display:inline-block;margin:4px;padding:6px 14px;background:#e8f0fe;color:#1967d2;border-radius:16px;text-decoration:none;font-size:.9rem}
     .nearby a:hover{background:#d2e3fc}
-    @media(max-width:600px){.info-grid{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:600px){
+      .info-grid{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr 1fr}
+      .home-top-ad{display:none}
+    }
   </style>
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_ID}" crossorigin="anonymous"></script>
@@ -139,8 +144,10 @@ function adSlot(slot: string = 'auto'): string {
 </div>`;
 }
 
-function adSlotBanner(slot: string): string {
-  return `<div class="ad-slot-banner">
+function adSlotBanner(slot: string, className: string = ''): string {
+  const classes = className ? `ad-slot-banner ${className}` : 'ad-slot-banner';
+
+  return `<div class="${classes}">
   <ins class="adsbygoogle"
     style="display:inline-block;width:100%;height:90px"
     data-ad-client="${ADSENSE_ID}"
@@ -173,7 +180,7 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
         <input type="text" class="search-box" id="search" placeholder="Escribe un código postal, colonia o municipio..." autocomplete="off">
         <div id="results"></div>
       </div>
-      ${adSlotBanner('home-top')}
+      ${adSlotBanner('home-top', 'home-top-ad')}
       <div class="card">
         <h2>📍 Códigos Postales por Estado</h2>
         <div class="grid">${estadosGrid}</div>
