@@ -1,6 +1,8 @@
 // Templates HTML con SEO optimizado y AdSense
 import { SITE_NAME, SITE_URL, ADSENSE_ID } from './config';
 
+const ADSENSE_ENABLED = ADSENSE_ID !== 'ca-pub-XXXXXXXXXX';
+
 // ============================================================
 // Layout base
 // ============================================================
@@ -88,8 +90,11 @@ function layout(opts: {
       .home-top-ad{display:none}
     }
   </style>
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_ID}" crossorigin="anonymous"></script>
+  ${
+    ADSENSE_ENABLED
+      ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_ID}" crossorigin="anonymous"></script>`
+      : ''
+  }
 </head>
 <body>
   <header>
@@ -133,6 +138,8 @@ function layout(opts: {
 // Ad Slot
 // ============================================================
 function adSlot(slot: string = 'auto'): string {
+  if (!ADSENSE_ENABLED) return '';
+
   return `<div class="ad-slot">
   <ins class="adsbygoogle"
     style="display:block"
@@ -145,6 +152,8 @@ function adSlot(slot: string = 'auto'): string {
 }
 
 function adSlotBanner(slot: string, className: string = ''): string {
+  if (!ADSENSE_ENABLED) return '';
+
   const classes = className ? `ad-slot-banner ${className}` : 'ad-slot-banner';
 
   return `<div class="${classes}">

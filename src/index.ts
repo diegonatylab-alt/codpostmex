@@ -26,7 +26,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v5',
+    cacheName: 'buscarcpmexico-v6',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
