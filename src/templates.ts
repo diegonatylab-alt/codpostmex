@@ -480,7 +480,7 @@ export function avisoLegalPage(): string {
         <div class="card">
           <h2>Contacto</h2>
           <p>Si necesitas reportar un error, solicitar una corrección o hacer una consulta comercial, puedes escribirnos al siguiente correo:</p>
-          <p style="margin-top:12px"><strong>Email:</strong> <a href="mailto:contacto@buscarcpmexico.com">contacto@buscarcpmexico.com</a></p>
+          <p style="margin-top:12px"><strong>Email:</strong> <a href="mailto:diegonatylab@gmail.com">diegonatylab@gmail.com</a></p>
           <p style="margin-top:12px">Tiempo estimado de respuesta: 24 a 72 horas hábiles.</p>
         </div>`,
     });
@@ -529,7 +529,7 @@ export function avisoLegalPage(): string {
           <h3 style="margin-top:20px">Google AdSense</h3>
           <p>Google puede usar cookies para personalizar anuncios. Puedes administrar preferencias en la configuración de anuncios de Google.</p>
           <h3 style="margin-top:20px">Derechos del usuario</h3>
-          <p>Si deseas solicitar la eliminación de información de contacto o realizar una consulta sobre privacidad, escribe a <a href="mailto:contacto@buscarcpmexico.com">contacto@buscarcpmexico.com</a>.</p>
+          <p>Si deseas solicitar la eliminación de información de contacto o realizar una consulta sobre privacidad, escribe a <a href="mailto:diegonatylab@gmail.com">diegonatylab@gmail.com</a>.</p>
           <p style="margin-top:12px">Última actualización: abril de 2026.</p>
         </div>`,
     });
