@@ -13,6 +13,6 @@ export function capitalize(text: string): string {
   return text.replace(/\b\w/g, c => c.toUpperCase());
 }
 
-export const SITE_NAME = 'CodigosPostalesMX';
-export const SITE_URL = 'https://codigospostalesmx.com'; // Cambiar por tu dominio real
+export const SITE_NAME = 'Buscar CP México';
+export const SITE_URL = 'https://buscarcpmexico.com'; // Cambiar por tu dominio real
 export const ADSENSE_ID = 'ca-pub-XXXXXXXXXX'; // Cambiar por tu ID de AdSense real

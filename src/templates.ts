@@ -108,7 +108,7 @@ function layout(opts: {
   </main>
   <footer>
     <div class="container">
-      <p>&copy; ${new Date().getFullYear()} ${SITE_NAME} — Consulta de códigos postales de México</p>
+      <p>&copy; ${new Date().getFullYear()} Buscar CP México — Consulta de códigos postales en línea</p>
       <p style="margin-top:8px">
         <a href="/estados">Estados</a> · 
         <a href="/aviso-legal">Aviso Legal</a> · 
@@ -147,9 +147,9 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
     .join('');
 
   return layout({
-    title: `Códigos Postales de México - Busca tu CP | ${SITE_NAME}`,
+    title: `Códigos Postales de México | Consulta Rápida`,
     description:
-      'Consulta todos los códigos postales de México. Busca por código postal, colonia, municipio o estado. Base de datos actualizada con información de SEPOMEX.',
+      'Busca códigos postales de México rápidamente. Consulta por CP, colonia, municipio o estado. Base de datos completa y actualizada.',
     canonical: '/',
     body: `
       <div class="card">
