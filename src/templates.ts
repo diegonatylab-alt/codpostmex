@@ -110,8 +110,11 @@ function layout(opts: {
     <div class="container">
       <p>&copy; ${new Date().getFullYear()} Buscar CP México — Consulta de códigos postales en línea</p>
       <p style="margin-top:8px">
-        <a href="/estados">Estados</a> · 
-        <a href="/aviso-legal">Aviso Legal</a> · 
+          <a href="/estados">Estados</a> |
+          <a href="/contacto">Contacto</a> |
+          <a href="/acerca-de">Acerca de</a> |
+          <a href="/politica-de-privacidad">Política de Privacidad</a> |
+          <a href="/aviso-legal">Aviso Legal</a> |
         <a href="/sitemap-index.xml">Sitemap</a>
       </p>
     </div>
@@ -460,6 +463,77 @@ export function avisoLegalPage(): string {
       </div>`,
   });
 }
+
+  // ============================================================
+  // Contacto
+  // ============================================================
+  export function contactoPage(): string {
+    return layout({
+      title: `Contacto | ${SITE_NAME}`,
+      description: 'Ponte en contacto con el equipo de Buscar CP Mexico para soporte, correcciones de datos o consultas comerciales.',
+      canonical: '/contacto',
+      breadcrumbs: [
+        { name: 'Inicio', url: '/' },
+        { name: 'Contacto', url: '/contacto' },
+      ],
+      body: `
+        <div class="card">
+          <h2>Contacto</h2>
+          <p>Si necesitas reportar un error, solicitar una corrección o hacer una consulta comercial, puedes escribirnos al siguiente correo:</p>
+          <p style="margin-top:12px"><strong>Email:</strong> <a href="mailto:contacto@buscarcpmexico.com">contacto@buscarcpmexico.com</a></p>
+          <p style="margin-top:12px">Tiempo estimado de respuesta: 24 a 72 horas hábiles.</p>
+        </div>`,
+    });
+  }
+
+  // ============================================================
+  // Acerca de
+  // ============================================================
+  export function acercaDePage(): string {
+    return layout({
+      title: `Acerca de | ${SITE_NAME}`,
+      description: 'Conoce el objetivo de Buscar CP Mexico y como se actualiza la información de códigos postales.',
+      canonical: '/acerca-de',
+      breadcrumbs: [
+        { name: 'Inicio', url: '/' },
+        { name: 'Acerca de', url: '/acerca-de' },
+      ],
+      body: `
+        <div class="card">
+          <h2>Acerca de Buscar CP Mexico</h2>
+          <p>Buscar CP Mexico es una plataforma para consultar códigos postales de forma rápida por estado, municipio, colonia o código postal.</p>
+          <p style="margin-top:12px">Nuestro objetivo es facilitar la búsqueda de información para usuarios, comercios electrónicos, envíos y trámites.</p>
+          <p style="margin-top:12px">La información se obtiene de fuentes públicas y se presenta en una interfaz optimizada para SEO, velocidad y usabilidad.</p>
+        </div>`,
+    });
+  }
+
+  // ============================================================
+  // Política de Privacidad
+  // ============================================================
+  export function politicaPrivacidadPage(): string {
+    return layout({
+      title: `Política de Privacidad | ${SITE_NAME}`,
+      description: 'Consulta cómo se recopilan y usan los datos en Buscar CP Mexico, incluyendo cookies y publicidad de terceros.',
+      canonical: '/politica-de-privacidad',
+      breadcrumbs: [
+        { name: 'Inicio', url: '/' },
+        { name: 'Política de Privacidad', url: '/politica-de-privacidad' },
+      ],
+      body: `
+        <div class="card">
+          <h2>Política de Privacidad</h2>
+          <p>En Buscar CP Mexico respetamos tu privacidad. Este sitio puede recopilar datos técnicos anónimos como dirección IP, navegador, país y páginas visitadas para analítica y mejora del servicio.</p>
+          <h3 style="margin-top:20px">Cookies</h3>
+          <p>Utilizamos cookies propias y de terceros para recordar preferencias, medir tráfico y mostrar publicidad relevante.</p>
+          <h3 style="margin-top:20px">Google AdSense</h3>
+          <p>Google puede usar cookies para personalizar anuncios. Puedes administrar preferencias en la configuración de anuncios de Google.</p>
+          <h3 style="margin-top:20px">Derechos del usuario</h3>
+          <p>Si deseas solicitar la eliminación de información de contacto o realizar una consulta sobre privacidad, escribe a <a href="mailto:contacto@buscarcpmexico.com">contacto@buscarcpmexico.com</a>.</p>
+          <p style="margin-top:12px">Última actualización: abril de 2026.</p>
+        </div>`,
+    });
+  }
 
 // HTML escape helper
 function escapeHtml(text: string): string {

@@ -8,6 +8,9 @@ import {
   codigoPostalPage,
   notFoundPage,
   avisoLegalPage,
+  contactoPage,
+  acercaDePage,
+  politicaPrivacidadPage,
 } from './templates';
 import { SITE_URL } from './config';
 
@@ -259,6 +262,27 @@ app.get('/aviso-legal', (c) => {
 });
 
 // ============================================================
+// CONTACTO
+// ============================================================
+app.get('/contacto', (c) => {
+  return c.html(contactoPage());
+});
+
+// ============================================================
+// ACERCA DE
+// ============================================================
+app.get('/acerca-de', (c) => {
+  return c.html(acercaDePage());
+});
+
+// ============================================================
+// POLITICA DE PRIVACIDAD
+// ============================================================
+app.get('/politica-de-privacidad', (c) => {
+  return c.html(politicaPrivacidadPage());
+});
+
+// ============================================================
 // ROBOTS.TXT
 // ============================================================
 app.get('/robots.txt', (c) => {
@@ -310,6 +334,10 @@ app.get('/sitemaps/pages.xml', async (c) => {
   const urls = [
     `  <url><loc>${SITE_URL}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>`,
     `  <url><loc>${SITE_URL}/estados</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>`,
+    `  <url><loc>${SITE_URL}/contacto</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>`,
+    `  <url><loc>${SITE_URL}/acerca-de</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>`,
+    `  <url><loc>${SITE_URL}/politica-de-privacidad</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>`,
+    `  <url><loc>${SITE_URL}/aviso-legal</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>`,
     ...estados.results.map(
       (e: any) =>
         `  <url><loc>${SITE_URL}/estado/${e.slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`
