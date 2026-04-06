@@ -36,6 +36,7 @@ function layout(opts: {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231a73e8'/%3E%3Ctext x='50' y='68' font-size='48' text-anchor='middle' fill='white' font-family='system-ui,sans-serif' font-weight='700'%3ECP%3C/text%3E%3C/svg%3E">
   <title>${escapeHtml(opts.title)}</title>
   <meta name="description" content="${escapeHtml(opts.description)}">
   <link rel="canonical" href="${SITE_URL}${opts.canonical}">
@@ -101,7 +102,7 @@ function layout(opts: {
 <body>
   <header>
     <div class="container">
-      <h1><a href="/">📮 ${SITE_NAME}</a></h1>
+      <h1><a href="/">${SITE_NAME}</a></h1>
     </div>
   </header>
   ${
@@ -187,13 +188,13 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
     canonical: '/',
     body: `
       <div class="card">
-        <h2>🔍 Buscar Código Postal</h2>
+        <h2>Buscar Código Postal</h2>
         <input type="text" class="search-box" id="search" placeholder="Escribe un código postal, colonia o municipio..." autocomplete="off">
         <div id="results"></div>
       </div>
       ${adSlotBanner('home-top', 'home-top-ad')}
       <div class="card">
-        <h2>📍 Códigos Postales por Estado</h2>
+        <h2>Códigos Postales por Estado</h2>
         <div class="grid">${estadosGrid}</div>
       </div>
       ${adSlot('home-bottom')}
