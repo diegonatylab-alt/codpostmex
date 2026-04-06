@@ -73,13 +73,20 @@ app.get('/', async (c) => {
 // LISTA DE ESTADOS
 // ============================================================
 app.get('/estados', async (c) => {
-  const estados = await c.env.DB.prepare(`
-    SELECT e.nombre, e.slug, COUNT(DISTINCT cp.codigo_postal) as count
-    FROM estados e
-    LEFT JOIN codigos_postales cp ON cp.clave_estado = e.clave
-    GROUP BY e.clave
-    ORDER BY e.nombre
-  `).all();
+  const [estados, totalCPsRow] = await Promise.all([
+    c.env.DB.prepare(`
+      SELECT e.nombre, e.slug, COUNT(DISTINCT cp.codigo_postal) as count
+      FROM estados e
+      LEFT JOIN codigos_postales cp ON cp.clave_estado = e.clave
+      GROUP BY e.clave
+      ORDER BY e.nombre
+    `).all(),
+    c.env.DB.prepare(
+      'SELECT COUNT(DISTINCT codigo_postal) as total_cps FROM codigos_postales'
+    ).first(),
+  ]);
+
+  const totalCPs = (totalCPsRow?.total_cps as number) || 0;
 
   return c.html(
     estadosListPage(
@@ -87,7 +94,8 @@ app.get('/estados', async (c) => {
         nombre: e.nombre,
         slug: e.slug,
         count: e.count || 0,
-      }))
+      })),
+      totalCPs
     )
   );
 });
@@ -106,16 +114,33 @@ app.get('/estado/:slug', async (c) => {
 
   if (!estado) return c.html(notFoundPage(), 404);
 
-  const municipios = await c.env.DB.prepare(`
-    SELECT m.nombre, m.slug, COUNT(DISTINCT cp.codigo_postal) as count
-    FROM municipios m
-    LEFT JOIN codigos_postales cp ON cp.clave_estado = m.clave_estado AND cp.clave_municipio = m.clave_municipio
-    WHERE m.clave_estado = ?
-    GROUP BY m.clave_estado, m.clave_municipio
-    ORDER BY m.nombre
-  `)
-    .bind(estado.clave)
-    .all();
+  const [municipios, estadoStats] = await Promise.all([
+    c.env.DB.prepare(`
+      SELECT m.nombre, m.slug, COUNT(DISTINCT cp.codigo_postal) as count
+      FROM municipios m
+      LEFT JOIN codigos_postales cp ON cp.clave_estado = m.clave_estado AND cp.clave_municipio = m.clave_municipio
+      WHERE m.clave_estado = ?
+      GROUP BY m.clave_estado, m.clave_municipio
+      ORDER BY m.nombre
+    `)
+      .bind(estado.clave)
+      .all(),
+    c.env.DB.prepare(`
+      SELECT COUNT(DISTINCT codigo_postal) as total_cps,
+             MIN(codigo_postal) as cp_min,
+             MAX(codigo_postal) as cp_max
+      FROM codigos_postales
+      WHERE clave_estado = ?
+    `)
+      .bind(estado.clave)
+      .first(),
+  ]);
+
+  const stats = {
+    totalCPs: (estadoStats?.total_cps as number) || 0,
+    cpMin: (estadoStats?.cp_min as string) || '',
+    cpMax: (estadoStats?.cp_max as string) || '',
+  };
 
   return c.html(
     estadoPage(
@@ -124,7 +149,8 @@ app.get('/estado/:slug', async (c) => {
         nombre: m.nombre,
         slug: m.slug,
         count: m.count || 0,
-      }))
+      })),
+      stats
     )
   );
 });
@@ -152,20 +178,40 @@ app.get('/estado/:estadoSlug/:municipioSlug', async (c) => {
 
   if (!municipio) return c.html(notFoundPage(), 404);
 
-  const codigos = await c.env.DB.prepare(`
-    SELECT codigo_postal, colonia, tipo_asentamiento, zona
-    FROM codigos_postales
-    WHERE clave_estado = ? AND municipio = ?
-    ORDER BY codigo_postal, colonia
-  `)
-    .bind(estado.clave, municipio.nombre)
-    .all();
+  const [codigos, municipioStats] = await Promise.all([
+    c.env.DB.prepare(`
+      SELECT codigo_postal, colonia, tipo_asentamiento, zona
+      FROM codigos_postales
+      WHERE clave_estado = ? AND municipio = ?
+      ORDER BY codigo_postal, colonia
+    `)
+      .bind(estado.clave, municipio.nombre)
+      .all(),
+    c.env.DB.prepare(`
+      SELECT COUNT(DISTINCT codigo_postal) as total_cps,
+             SUM(CASE WHEN zona = 'Urbano' THEN 1 ELSE 0 END) as urbanas,
+             SUM(CASE WHEN zona = 'Rural' THEN 1 ELSE 0 END) as rurales,
+             SUM(CASE WHEN zona = 'Semiurbano' THEN 1 ELSE 0 END) as semiurbanas
+      FROM codigos_postales
+      WHERE clave_estado = ? AND municipio = ?
+    `)
+      .bind(estado.clave, municipio.nombre)
+      .first(),
+  ]);
+
+  const stats = {
+    totalCPs: (municipioStats?.total_cps as number) || 0,
+    urbanas: (municipioStats?.urbanas as number) || 0,
+    rurales: (municipioStats?.rurales as number) || 0,
+    semiurbanas: (municipioStats?.semiurbanas as number) || 0,
+  };
 
   return c.html(
     municipioPage(
       { nombre: estado.nombre as string, slug: estado.slug as string },
       { nombre: municipio.nombre as string, slug: municipio.slug as string },
-      codigos.results as any[]
+      codigos.results as any[],
+      stats
     )
   );
 });

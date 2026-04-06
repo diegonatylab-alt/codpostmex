@@ -234,7 +234,8 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
 // ============================================================
 export function estadoPage(
   estado: { nombre: string; slug: string },
-  municipios: { nombre: string; slug: string; count: number }[]
+  municipios: { nombre: string; slug: string; count: number }[],
+  stats: { totalCPs: number; cpMin: string; cpMax: string }
 ): string {
   const munGrid = municipios
     .map(
@@ -255,8 +256,8 @@ export function estadoPage(
     body: `
       <div class="card">
         <h2>Códigos Postales de ${escapeHtml(estado.nombre)}</h2>
-        <p>Encuentra los códigos postales de todos los municipios del estado de ${escapeHtml(estado.nombre)}. 
-        Selecciona un municipio para ver sus colonias y códigos postales.</p>
+        <p>El estado de ${escapeHtml(estado.nombre)} cuenta con ${municipios.length} municipios y un total de ${stats.totalCPs.toLocaleString('es-MX')} códigos postales, que van del CP ${escapeHtml(stats.cpMin)} al ${escapeHtml(stats.cpMax)}. Selecciona un municipio para consultar todas sus colonias y códigos postales.</p>
+        <p style="margin-top:12px">Los códigos postales de ${escapeHtml(estado.nombre)} son asignados por el Servicio Postal Mexicano (SEPOMEX) y se utilizan para identificar zonas de entrega de correspondencia, envíos de paquetería y trámites oficiales en cada municipio del estado.</p>
       </div>
       ${adSlot('estado-top')}
       <div class="card">
@@ -273,7 +274,8 @@ export function estadoPage(
 export function municipioPage(
   estado: { nombre: string; slug: string },
   municipio: { nombre: string; slug: string },
-  codigos: { codigo_postal: string; colonia: string; tipo_asentamiento: string; zona: string }[]
+  codigos: { codigo_postal: string; colonia: string; tipo_asentamiento: string; zona: string }[],
+  stats: { totalCPs: number; urbanas: number; rurales: number; semiurbanas: number }
 ): string {
   // Agrupar por código postal
   const rows = codigos
@@ -290,6 +292,14 @@ export function municipioPage(
 
   const uniqueCPs = [...new Set(codigos.map(c => c.codigo_postal))];
 
+  const zonaParts: string[] = [];
+  if (stats.urbanas > 0) zonaParts.push(`${stats.urbanas} son urbanas`);
+  if (stats.rurales > 0) zonaParts.push(`${stats.rurales} son rurales`);
+  if (stats.semiurbanas > 0) zonaParts.push(`${stats.semiurbanas} son semiurbanas`);
+  const zonaDesc = zonaParts.length > 0
+    ? zonaParts.slice(0, -1).join(', ') + (zonaParts.length > 1 ? ' y ' : '') + zonaParts[zonaParts.length - 1]
+    : '';
+
   return layout({
     title: `Códigos Postales de ${municipio.nombre}, ${estado.nombre} - Colonias y CP 2026`,
     description: `${uniqueCPs.length} códigos postales y ${codigos.length} colonias en ${municipio.nombre}, ${estado.nombre}. Lista actualizada 2026 con tipo de asentamiento y zona.`,
@@ -302,7 +312,8 @@ export function municipioPage(
     body: `
       <div class="card">
         <h2>Códigos Postales de ${escapeHtml(municipio.nombre)}, ${escapeHtml(estado.nombre)}</h2>
-        <p>${uniqueCPs.length} códigos postales y ${codigos.length} colonias encontradas en ${escapeHtml(municipio.nombre)}.</p>
+        <p>${escapeHtml(municipio.nombre)} es un municipio del estado de ${escapeHtml(estado.nombre)} que cuenta con ${stats.totalCPs} códigos postales y ${codigos.length} colonias en total.</p>
+        <p style="margin-top:8px">De las ${codigos.length} colonias, ${zonaDesc}. Consulta la tabla completa para encontrar el código postal de la colonia que buscas.</p>
       </div>
       ${adSlot('municipio-top')}
       <div class="card">
@@ -311,7 +322,11 @@ export function municipioPage(
           <tbody>${rows}</tbody>
         </table>
       </div>
-      ${adSlot('municipio-bottom')}`,
+      ${adSlot('municipio-bottom')}
+      <div class="card">
+        <h3>¿Cómo encontrar un código postal en ${escapeHtml(municipio.nombre)}?</h3>
+        <p>Para encontrar el código postal de una colonia en ${escapeHtml(municipio.nombre)}, ${escapeHtml(estado.nombre)}, busca el nombre de tu colonia en la tabla anterior. Cada código postal de 5 dígitos identifica una o más colonias dentro del municipio. Si necesitas enviar correspondencia o paquetería, asegúrate de usar el código postal correcto de la colonia destino.</p>
+      </div>`,
   });
 }
 
@@ -418,7 +433,7 @@ export function codigoPostalPage(
 // ============================================================
 // Lista de estados
 // ============================================================
-export function estadosListPage(estados: { nombre: string; slug: string; count: number }[]): string {
+export function estadosListPage(estados: { nombre: string; slug: string; count: number }[], totalCPs: number): string {
   const rows = estados
     .map(
       e =>
@@ -437,7 +452,8 @@ export function estadosListPage(estados: { nombre: string; slug: string; count: 
     body: `
       <div class="card">
         <h2>Códigos Postales por Estado</h2>
-        <p>México tiene 32 entidades federativas. Selecciona un estado para consultar sus códigos postales.</p>
+        <p>México cuenta con 32 entidades federativas y más de ${totalCPs.toLocaleString('es-MX')} códigos postales asignados por el Servicio Postal Mexicano (SEPOMEX). Cada estado se divide en municipios, y cada municipio contiene colonias identificadas por un código postal de 5 dígitos.</p>
+        <p style="margin-top:8px">Selecciona un estado de la tabla para consultar todos sus municipios, colonias y códigos postales.</p>
       </div>
       ${adSlot('estados-top')}
       <div class="card">
