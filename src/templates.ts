@@ -39,6 +39,8 @@ function layout(opts: {
   <title>${escapeHtml(opts.title)}</title>
   <meta name="description" content="${escapeHtml(opts.description)}">
   <link rel="canonical" href="${SITE_URL}${opts.canonical}">
+  <link rel="alternate" hreflang="es-MX" href="${SITE_URL}${opts.canonical}">
+  <link rel="alternate" hreflang="x-default" href="${SITE_URL}${opts.canonical}">
   <meta property="og:title" content="${escapeHtml(opts.title)}">
   <meta property="og:description" content="${escapeHtml(opts.description)}">
   <meta property="og:url" content="${SITE_URL}${opts.canonical}">
