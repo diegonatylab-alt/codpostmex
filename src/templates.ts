@@ -36,7 +36,7 @@ function layout(opts: {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231a73e8'/%3E%3Ctext x='50' y='68' font-size='48' text-anchor='middle' fill='white' font-family='system-ui,sans-serif' font-weight='700'%3ECP%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23006847'/%3E%3Ctext x='50' y='68' font-size='48' text-anchor='middle' fill='white' font-family='system-ui,sans-serif' font-weight='700'%3ECP%3C/text%3E%3C/svg%3E">
   <title>${escapeHtml(opts.title)}</title>
   <meta name="description" content="${escapeHtml(opts.description)}">
   <link rel="canonical" href="${SITE_URL}${opts.canonical}">
@@ -54,43 +54,70 @@ function layout(opts: {
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:system-ui,-apple-system,sans-serif;background:#f8f9fa;color:#212529;line-height:1.6}
     .container{max-width:960px;margin:0 auto;padding:0 16px}
-    header{background:#1a73e8;color:#fff;padding:12px 0;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+    header{background:#006847;color:#fff;padding:12px 0;box-shadow:0 2px 4px rgba(0,0,0,.1)}
     header a{color:#fff;text-decoration:none}
     header h1{font-size:1.3rem}
-    .breadcrumbs{padding:10px 0;font-size:.85rem;color:#5f6368}
-    .breadcrumbs a{color:#1a73e8;text-decoration:none}
+    .breadcrumbs{padding:10px 0;font-size:.85rem;color:#4a4a4a}
+    .breadcrumbs a{color:#006847;text-decoration:none}
     .breadcrumbs a:hover{text-decoration:underline}
     main{padding:20px 0}
     .card{background:#fff;border-radius:8px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
     h2{color:#202124;margin-bottom:12px;font-size:1.4rem}
-    h3{color:#1a73e8;margin-bottom:8px}
+    h3{color:#006847;margin-bottom:8px}
     .search-box{width:100%;padding:12px 16px;font-size:1.1rem;border:2px solid #dadce0;border-radius:24px;outline:none;margin-bottom:16px}
-    .search-box:focus{border-color:#1a73e8;box-shadow:0 0 0 3px rgba(26,115,232,.15)}
+    .search-box:focus{border-color:#006847;box-shadow:0 0 0 3px rgba(0,104,71,.15)}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
     .grid a{display:block;padding:12px;background:#fff;border:1px solid #e8eaed;border-radius:8px;text-decoration:none;color:#202124;transition:box-shadow .2s}
-    .grid a:hover{box-shadow:0 2px 8px rgba(0,0,0,.12);border-color:#1a73e8}
+    .grid a:hover{box-shadow:0 2px 8px rgba(0,0,0,.12);border-color:#006847}
     table{width:100%;border-collapse:collapse;margin:12px 0}
     th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #e8eaed}
-    th{background:#f1f3f4;font-weight:600;color:#5f6368;font-size:.85rem;text-transform:uppercase}
+    th{background:#f1f3f4;font-weight:600;color:#4a4a4a;font-size:.85rem;text-transform:uppercase}
     tr:hover td{background:#f8f9fa}
-    .tag{display:inline-block;padding:2px 8px;background:#e8f0fe;color:#1967d2;border-radius:12px;font-size:.8rem;margin:2px}
+    .tag{display:inline-block;padding:2px 8px;background:#e6f2ec;color:#005538;border-radius:12px;font-size:.8rem;margin:2px}
     .ad-slot{background:#f1f3f4;border:1px dashed #dadce0;padding:20px;text-align:center;color:#9aa0a6;font-size:.85rem;margin:16px 0;min-height:90px;border-radius:8px}
     .ad-slot-banner{background:#f1f3f4;border:1px dashed #dadce0;text-align:center;color:#9aa0a6;font-size:.85rem;margin:12px 0;height:90px;max-height:90px;overflow:hidden;border-radius:8px;display:flex;align-items:center;justify-content:center}
     .home-top-ad{margin-top:8px}
-    footer{background:#202124;color:#9aa0a6;padding:24px 0;margin-top:40px;font-size:.85rem;text-align:center}
-    footer a{color:#8ab4f8}
-    .cp-big{font-size:2.5rem;font-weight:700;color:#1a73e8}
+    footer{background:#1a1a1a;color:#9aa0a6;padding:24px 0;margin-top:40px;font-size:.85rem;text-align:center}
+    footer a{color:#66bb6a}
+    .cp-big{font-size:2.5rem;font-weight:700;color:#006847}
     .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
     .info-item{padding:12px;background:#f8f9fa;border-radius:8px}
-    .info-label{font-size:.8rem;color:#5f6368;text-transform:uppercase;margin-bottom:4px}
+    .info-label{font-size:.8rem;color:#4a4a4a;text-transform:uppercase;margin-bottom:4px}
     .info-value{font-size:1.05rem;font-weight:500}
     .nearby{margin-top:16px}
-    .nearby a{display:inline-block;margin:4px;padding:6px 14px;background:#e8f0fe;color:#1967d2;border-radius:16px;text-decoration:none;font-size:.9rem}
-    .nearby a:hover{background:#d2e3fc}
+    .nearby a{display:inline-block;margin:4px;padding:6px 14px;background:#e6f2ec;color:#005538;border-radius:16px;text-decoration:none;font-size:.9rem}
+    .nearby a:hover{background:#ccdfcf}
     @media(max-width:600px){
       .info-grid{grid-template-columns:1fr}
       .grid{grid-template-columns:1fr 1fr}
       .home-top-ad{display:none}
+    }
+    @media(prefers-color-scheme:dark){
+      body{background:#1a1a1a;color:#e0e0e0}
+      .card{background:#2d2d2d;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+      header{background:#004d35}
+      .breadcrumbs{color:#b0b0b0}
+      .breadcrumbs a{color:#66bb6a}
+      h2{color:#e0e0e0}
+      h3{color:#66bb6a}
+      .search-box{background:#2d2d2d;color:#e0e0e0;border-color:#444}
+      .search-box:focus{border-color:#66bb6a;box-shadow:0 0 0 3px rgba(102,187,106,.25)}
+      .grid a{background:#2d2d2d;border-color:#444;color:#e0e0e0}
+      .grid a:hover{box-shadow:0 2px 8px rgba(0,0,0,.3);border-color:#66bb6a}
+      table th{background:#333;color:#b0b0b0}
+      table td{border-bottom-color:#444}
+      tr:hover td{background:#333}
+      .tag{background:#1b3a2a;color:#81c784}
+      .nearby a{background:#1b3a2a;color:#81c784}
+      .nearby a:hover{background:#2a4d3a}
+      .info-item{background:#333}
+      .info-label{color:#999}
+      .ad-slot{background:#2d2d2d;border-color:#444;color:#666}
+      .ad-slot-banner{background:#2d2d2d;border-color:#444;color:#666}
+      footer{background:#111;color:#888}
+      footer a{color:#66bb6a}
+      .cp-big{color:#66bb6a}
+      a{color:#66bb6a}
     }
   </style>
   ${
@@ -216,7 +243,7 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
             const res = await fetch('/api/buscar?q=' + encodeURIComponent(q));
             const data = await res.json();
             if (data.results.length === 0) {
-              resultsDiv.innerHTML = '<p style="color:#5f6368;padding:8px">No se encontraron resultados.</p>';
+              resultsDiv.innerHTML = '<p style="color:#4a4a4a;padding:8px">No se encontraron resultados.</p>';
               return;
             }
             resultsDiv.innerHTML = '<table><tr><th>CP</th><th>Colonia</th><th>Municipio</th><th>Estado</th></tr>' +
@@ -479,7 +506,7 @@ export function notFoundPage(): string {
       <div class="card" style="text-align:center;padding:40px">
         <h2>404 - Página no encontrada</h2>
         <p style="margin:16px 0">El código postal o la página que buscas no existe.</p>
-        <a href="/" style="color:#1a73e8">← Volver al inicio</a>
+        <a href="/" style="color:#006847">← Volver al inicio</a>
       </div>`,
   });
 }
