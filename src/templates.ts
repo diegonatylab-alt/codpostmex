@@ -181,9 +181,9 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
     .join('');
 
   return layout({
-    title: `Códigos Postales de México | Consulta Rápida`,
+    title: `Códigos Postales de México 2026 - Buscar CP por Colonia, Municipio o Estado`,
     description:
-      'Busca códigos postales de México rápidamente. Consulta por CP, colonia, municipio o estado. Base de datos completa y actualizada.',
+      'Consulta los códigos postales de México actualizados 2026. Busca por número de CP, colonia, municipio o estado. Base de datos completa con todos los códigos de SEPOMEX.',
     canonical: '/',
     body: `
       <div class="card">
@@ -244,8 +244,8 @@ export function estadoPage(
     .join('');
 
   return layout({
-    title: `Códigos Postales de ${estado.nombre} - Municipios | ${SITE_NAME}`,
-    description: `Consulta todos los códigos postales del estado de ${estado.nombre}, México. Lista de municipios con sus códigos postales y colonias.`,
+    title: `Códigos Postales de ${estado.nombre} 2026 - Todos los Municipios y Colonias`,
+    description: `Encuentra todos los códigos postales de ${estado.nombre}, México. Lista completa de municipios, colonias y CPs actualizados 2026.`,
     canonical: `/estado/${estado.slug}`,
     breadcrumbs: [
       { name: 'Inicio', url: '/' },
@@ -291,8 +291,8 @@ export function municipioPage(
   const uniqueCPs = [...new Set(codigos.map(c => c.codigo_postal))];
 
   return layout({
-    title: `Códigos Postales de ${municipio.nombre}, ${estado.nombre} | ${SITE_NAME}`,
-    description: `Lista completa de ${uniqueCPs.length} códigos postales y ${codigos.length} colonias en ${municipio.nombre}, ${estado.nombre}. Consulta tipo de asentamiento y zona.`,
+    title: `Códigos Postales de ${municipio.nombre}, ${estado.nombre} - Colonias y CP 2026`,
+    description: `${uniqueCPs.length} códigos postales y ${codigos.length} colonias en ${municipio.nombre}, ${estado.nombre}. Lista actualizada 2026 con tipo de asentamiento y zona.`,
     canonical: `/estado/${estado.slug}/${municipio.slug}`,
     breadcrumbs: [
       { name: 'Inicio', url: '/' },
@@ -355,7 +355,7 @@ export function codigoPostalPage(
   };
 
   return layout({
-    title: `Código Postal ${cp} - ${first.municipio}, ${first.estado} | ${SITE_NAME}`,
+    title: `Código Postal ${cp} - ${first.municipio}, ${first.estado} | Colonias y Mapa`,
     description: `El código postal ${cp} pertenece a ${first.municipio}, ${first.estado}. Incluye ${colonias.length} colonia(s): ${colonias.slice(0, 3).map(c => c.colonia).join(', ')}${colonias.length > 3 ? ' y más' : ''}.`,
     canonical: `/codigo-postal/${cp}`,
     breadcrumbs: [
@@ -427,8 +427,8 @@ export function estadosListPage(estados: { nombre: string; slug: string; count: 
     .join('');
 
   return layout({
-    title: `Códigos Postales por Estado - México | ${SITE_NAME}`,
-    description: 'Lista de todos los 32 estados de México con sus códigos postales. Selecciona un estado para consultar municipios, colonias y códigos postales.',
+    title: `Códigos Postales por Estado en México 2026 - Los 32 Estados`,
+    description: 'Lista de los 32 estados de México con todos sus códigos postales actualizados 2026. Consulta municipios, colonias y CPs por estado.',
     canonical: '/estados',
     breadcrumbs: [
       { name: 'Inicio', url: '/' },
