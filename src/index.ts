@@ -21,6 +21,21 @@ type Bindings = {
 const app = new Hono<{ Bindings: Bindings }>();
 
 // ============================================================
+// Force HTTPS (301)
+// ============================================================
+app.use('*', async (c, next) => {
+  const url = new URL(c.req.url);
+  const proto = c.req.header('x-forwarded-proto') || url.protocol.replace(':', '');
+
+  if (proto !== 'https') {
+    url.protocol = 'https:';
+    return c.redirect(url.toString(), 301);
+  }
+
+  await next();
+});
+
+// ============================================================
 // Cache middleware — cachea respuestas HTML por 24h en Cloudflare Edge
 // ============================================================
 app.use(
