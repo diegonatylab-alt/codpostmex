@@ -41,7 +41,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v7',
+    cacheName: 'buscarcpmexico-v8',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -461,6 +461,20 @@ ${urls.join('\n')}
 
   return c.newResponse(xml, 200, {
     'Content-Type': 'application/xml',
+  });
+});
+
+// ============================================================
+// FAVICON
+// ============================================================
+app.get('/favicon.svg', (c) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="20" fill="#006847"/>
+  <text x="50" y="68" font-size="48" font-weight="bold" text-anchor="middle" fill="white" font-family="system-ui,sans-serif">CP</text>
+</svg>`;
+  return c.newResponse(svg, 200, {
+    'Content-Type': 'image/svg+xml',
+    'Cache-Control': 'public, max-age=31536000, immutable',
   });
 });
 
