@@ -419,7 +419,7 @@ export function codigoPostalPage(
           name: `¿Dónde queda el código postal ${cp}?`,
           acceptedAnswer: {
             '@type': 'Answer',
-            text: `El código postal ${cp} se encuentra en el municipio de ${first.municipio}, estado de ${first.estado}, México. Incluye ${colonias.length} colonia(s): ${colonias.slice(0, 5).map(c => c.colonia).join(', ')}.`,
+            text: `El código postal ${cp} se encuentra en el municipio de ${first.municipio}, estado de ${first.estado}, México. Incluye ${colonias.length} colonia(s): ${colonias.slice(0, 5).map(c => c.colonia).join(', ')}${colonias.length > 5 ? ` y ${colonias.length - 5} más` : ''}.`,
           },
         },
         {
@@ -454,11 +454,11 @@ export function codigoPostalPage(
       var link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      link.crossOrigin = '';
+      link.crossOrigin = 'anonymous';
       document.head.appendChild(link);
       var script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.crossOrigin = '';
+      script.crossOrigin = 'anonymous';
       script.onload = function() {
         var map = L.map('cp-map').setView([${coords.lat}, ${coords.lng}], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
