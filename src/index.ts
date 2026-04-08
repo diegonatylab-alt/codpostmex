@@ -41,7 +41,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v8',
+    cacheName: 'buscarcpmexico-v9',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -251,6 +251,11 @@ app.get('/codigo-postal/:cp', async (c) => {
 
   const nearby = nearbyResult.results.map((r: any) => r.codigo_postal);
 
+  // Obtener coordenadas para el mapa
+  const coords = await c.env.DB.prepare(
+    'SELECT latitud, longitud FROM cp_coordenadas WHERE codigo_postal = ?'
+  ).bind(cp).first();
+
   // Obtener slugs para breadcrumbs
   const first: any = colonias.results[0];
   const estadoRow = await c.env.DB.prepare(
@@ -271,7 +276,8 @@ app.get('/codigo-postal/:cp', async (c) => {
       colonias.results as any[],
       nearby,
       (estadoRow?.slug as string) || '',
-      (municipioRow?.slug as string) || ''
+      (municipioRow?.slug as string) || '',
+      coords ? { lat: coords.latitud as number, lng: coords.longitud as number } : null
     )
   );
 });
