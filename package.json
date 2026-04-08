@@ -9,7 +9,12 @@
     "db:migrate": "wrangler d1 execute codigos-postales-db --local --file=./schema.sql",
     "db:migrate:remote": "wrangler d1 execute codigos-postales-db --remote --file=./schema.sql",
     "db:seed": "node scripts/seed.js",
-    "db:seed:remote": "node scripts/seed.js --remote"
+    "db:seed:remote": "node scripts/seed.js --remote",
+    "geo:download": "node scripts/download-geonames.js",
+    "geo:enrich": "node scripts/enrich-coordinates.js",
+    "geo:enrich:remote": "node scripts/enrich-coordinates.js --remote",
+    "db:migrate:coords": "wrangler d1 execute codigos-postales-db --local --file=./schema-coordinates.sql",
+    "db:migrate:coords:remote": "wrangler d1 execute codigos-postales-db --remote --file=./schema-coordinates.sql"
   },
   "dependencies": {
     "hono": "^4.4.0"

@@ -3,3 +3,5 @@ node_modules/
 .tmp-sql/
 .dev.vars
 dist/
+data/MX.txt
+data/MX.zip
