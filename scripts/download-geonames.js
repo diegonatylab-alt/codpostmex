@@ -13,7 +13,7 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const zlib = require('zlib');
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const ZIP_URL = 'https://download.geonames.org/export/zip/MX.zip';
@@ -57,15 +57,57 @@ function download(url, dest) {
   });
 }
 
+function extractFileFromZip(zipPath, targetFilename, outputPath) {
+  const buf = fs.readFileSync(zipPath);
+  let offset = 0;
+
+  while (offset + 30 <= buf.length) {
+    const sig = buf.readUInt32LE(offset);
+    if (sig !== 0x04034b50) break; // Not a local file header — reached central directory
+
+    const compressionMethod = buf.readUInt16LE(offset + 8);
+    const compressedSize = buf.readUInt32LE(offset + 18);
+    const filenameLen = buf.readUInt16LE(offset + 26);
+    const extraLen = buf.readUInt16LE(offset + 28);
+
+    if (offset + 30 + filenameLen + extraLen + compressedSize > buf.length) {
+      throw new Error('Corrupted ZIP file: entry data exceeds buffer length');
+    }
+
+    const filename = buf.toString('utf-8', offset + 30, offset + 30 + filenameLen);
+    const dataStart = offset + 30 + filenameLen + extraLen;
+
+    if (filename === targetFilename) {
+      let fileData;
+      if (compressionMethod === 0) {
+        // Stored (no compression)
+        fileData = buf.slice(dataStart, dataStart + compressedSize);
+      } else if (compressionMethod === 8) {
+        // Deflate
+        const compressed = buf.slice(dataStart, dataStart + compressedSize);
+        fileData = zlib.inflateRawSync(compressed);
+      } else {
+        throw new Error(`Unsupported compression method: ${compressionMethod}`);
+      }
+
+      fs.writeFileSync(outputPath, fileData);
+      return true;
+    }
+
+    offset = dataStart + compressedSize;
+  }
+
+  return false;
+}
+
 async function main() {
   try {
     await download(ZIP_URL, ZIP_PATH);
     console.log(`Archivo descargado: ${ZIP_PATH}`);
 
     console.log('Extrayendo MX.txt...');
-    execFileSync('unzip', ['-o', ZIP_PATH, 'MX.txt', '-d', DATA_DIR], { stdio: 'inherit' });
-
-    if (!fs.existsSync(TXT_PATH)) {
+    const extracted = extractFileFromZip(ZIP_PATH, 'MX.txt', TXT_PATH);
+    if (!extracted) {
       throw new Error('No se encontró MX.txt en el ZIP descargado.');
     }
 

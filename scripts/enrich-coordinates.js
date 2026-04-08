@@ -129,7 +129,7 @@ for (let i = 0; i < batches.length; i++) {
     execFileSync(
       'npx',
       ['wrangler', 'd1', 'execute', 'codigos-postales-db', remoteFlag, '--yes', `--file=${batchFile}`],
-      { stdio: 'inherit', cwd: path.join(__dirname, '..') }
+      { stdio: 'inherit', cwd: path.join(__dirname, '..'), shell: true }
     );
     successCount += batches[i].length;
     process.stdout.write(`\rBatch ${i + 1}/${batches.length} completado`);
