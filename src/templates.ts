@@ -12,7 +12,7 @@ function layout(opts: {
   canonical: string;
   breadcrumbs?: { name: string; url: string }[];
   body: string;
-  structuredData?: object;
+  structuredData?: object | object[];
 }): string {
   const breadcrumbsLD = opts.breadcrumbs
     ? JSON.stringify({
@@ -28,7 +28,9 @@ function layout(opts: {
     : '';
 
   const structuredDataTag = opts.structuredData
-    ? `<script type="application/ld+json">${JSON.stringify(opts.structuredData)}</script>`
+    ? (Array.isArray(opts.structuredData)
+        ? opts.structuredData.map(sd => `<script type="application/ld+json">${JSON.stringify(sd)}</script>`).join('\n  ')
+        : `<script type="application/ld+json">${JSON.stringify(opts.structuredData)}</script>`)
     : '';
 
   return `<!DOCTYPE html>
@@ -87,6 +89,7 @@ function layout(opts: {
     .nearby{margin-top:16px}
     .nearby a{display:inline-block;margin:4px;padding:6px 14px;background:#e6f2ec;color:#005538;border-radius:16px;text-decoration:none;font-size:.9rem}
     .nearby a:hover{background:#ccdfcf}
+    #cp-map{height:350px;border-radius:8px;margin-top:12px;background:#e8eaed}
     @media(max-width:600px){
       .info-grid{grid-template-columns:1fr}
       .grid{grid-template-columns:1fr 1fr}
@@ -118,6 +121,7 @@ function layout(opts: {
       footer a{color:#66bb6a}
       .cp-big{color:#66bb6a}
       a{color:#66bb6a}
+      #cp-map{background:#333}
     }
   </style>
   ${
@@ -366,7 +370,8 @@ export function codigoPostalPage(
   colonias: { colonia: string; tipo_asentamiento: string; municipio: string; estado: string; ciudad: string; zona: string; clave_estado: string }[],
   nearby: string[],
   estadoSlug: string,
-  municipioSlug: string
+  municipioSlug: string,
+  coords: { lat: number; lng: number } | null
 ): string {
   const first = colonias[0];
   const coloniasRows = colonias
@@ -384,18 +389,99 @@ export function codigoPostalPage(
     .map(n => `<a href="/codigo-postal/${n}">${n}</a>`)
     .join('');
 
-  const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'Place',
-    name: `Código Postal ${cp}`,
-    address: {
-      '@type': 'PostalAddress',
-      postalCode: cp,
-      addressLocality: first.municipio,
-      addressRegion: first.estado,
-      addressCountry: 'MX',
+  const structuredData: object[] = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Place',
+      name: `Código Postal ${cp} - ${first.municipio}, ${first.estado}`,
+      address: {
+        '@type': 'PostalAddress',
+        postalCode: cp,
+        addressLocality: first.municipio,
+        addressRegion: first.estado,
+        addressCountry: 'MX',
+      },
+      ...(coords ? {
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: coords.lat,
+          longitude: coords.lng,
+        },
+        hasMap: `https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lng}#map=15/${coords.lat}/${coords.lng}`,
+      } : {}),
     },
-  };
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: `¿Dónde queda el código postal ${cp}?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `El código postal ${cp} se encuentra en el municipio de ${first.municipio}, estado de ${first.estado}, México. Incluye ${colonias.length} colonia(s): ${colonias.slice(0, 5).map(c => c.colonia).join(', ')}${colonias.length > 5 ? ` y ${colonias.length - 5} más` : ''}.`,
+          },
+        },
+        {
+          '@type': 'Question',
+          name: `¿Qué colonias pertenecen al CP ${cp}?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `Las colonias del código postal ${cp} son: ${colonias.map(c => c.colonia).join(', ')}. Todas pertenecen al municipio de ${first.municipio}, ${first.estado}.`,
+          },
+        },
+      ],
+    },
+  ];
+
+  const mapSection = coords
+    ? `<div class="card">
+        <h3>Mapa del Código Postal ${cp}</h3>
+        <div id="cp-map"></div>
+      </div>`
+    : '';
+
+  const mapScript = coords
+    ? `<script>
+(function(){
+  var mapEl = document.getElementById('cp-map');
+  if (!mapEl) return;
+  var loaded = false;
+  var observer = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting && !loaded) {
+      loaded = true;
+      observer.disconnect();
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+      var script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.crossOrigin = 'anonymous';
+      script.onload = function() {
+        var map = L.map('cp-map').setView([${coords.lat}, ${coords.lng}], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+        L.marker([${coords.lat}, ${coords.lng}]).addTo(map)
+          .bindPopup('<strong>CP ${cp}</strong>')
+          .openPopup();
+        L.circle([${coords.lat}, ${coords.lng}], {
+          color: '#006847',
+          fillColor: '#006847',
+          fillOpacity: 0.1,
+          radius: 500
+        }).addTo(map);
+      };
+      document.body.appendChild(script);
+    }
+  }, { rootMargin: '200px' });
+  observer.observe(mapEl);
+})();
+</script>`
+    : '';
 
   return layout({
     title: `Código Postal ${cp} - ${first.municipio}, ${first.estado} | Colonias y Mapa`,
@@ -439,6 +525,7 @@ export function codigoPostalPage(
           <tbody>${coloniasRows}</tbody>
         </table>
       </div>
+      ${mapSection}
       ${adSlot('cp-middle')}
       ${
         nearby.length > 0
@@ -454,7 +541,8 @@ export function codigoPostalPage(
         <p>El código postal ${cp} se encuentra en el municipio de <strong>${escapeHtml(first.municipio)}</strong>, 
         en el estado de <strong>${escapeHtml(first.estado)}</strong>, México. 
         Este código postal incluye ${colonias.length} colonia(s) y pertenece a la zona ${escapeHtml((first.zona || 'urbana').toLowerCase())}.</p>
-      </div>`,
+      </div>
+      ${mapScript}`,
   });
 }
 
