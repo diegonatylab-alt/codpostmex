@@ -162,6 +162,36 @@ npm run db:seed:remote    # producción
 
 ---
 
+## Agregar coordenadas geográficas (opcional)
+
+Para habilitar mapas y búsqueda GPS, necesitas agregar coordenadas a la base de datos:
+
+### 1. Crear la tabla de coordenadas
+
+```bash
+npm run db:migrate:coords          # local
+npm run db:migrate:coords:remote   # producción
+```
+
+### 2. Descargar datos de GeoNames
+
+```bash
+npm run geo:download
+```
+
+Esto descarga las coordenadas de códigos postales de México desde GeoNames (gratis).
+
+> **Nota:** El script de descarga requiere `unzip` en el sistema. Está disponible por defecto en macOS y Linux. En Windows, instalalo con `choco install unzip` o usá WSL.
+
+### 3. Importar coordenadas
+
+```bash
+npm run geo:enrich          # local
+npm run geo:enrich:remote   # producción
+```
+
+---
+
 ## Dominio personalizado
 
 1. Comprá un dominio (ej: codigospostalesmx.com) en Cloudflare Registrar (~$10/año)
