@@ -220,10 +220,18 @@ app.get('/estado/:estadoSlug/:municipioSlug', async (c) => {
 // CÓDIGO POSTAL individual
 // ============================================================
 app.get('/codigo-postal/:cp', async (c) => {
-  const cp = c.req.param('cp');
+  const rawCp = c.req.param('cp');
 
-  // Validar que sea un CP numérico de 5 dígitos
-  if (!/^\d{5}$/.test(cp)) return c.html(notFoundPage(), 404);
+  // Validar que sea numérico (1-5 dígitos)
+  if (!/^\d{1,5}$/.test(rawCp)) return c.html(notFoundPage(), 404);
+
+  // Normalizar a 5 dígitos con ceros a la izquierda
+  const cp = rawCp.padStart(5, '0');
+
+  // Redirigir si la URL no tiene el formato canónico de 5 dígitos
+  if (rawCp !== cp) {
+    return c.redirect(`/codigo-postal/${cp}`, 301);
+  }
 
   const colonias = await c.env.DB.prepare(`
     SELECT colonia, tipo_asentamiento, municipio, estado, ciudad, zona, clave_estado, clave_municipio
