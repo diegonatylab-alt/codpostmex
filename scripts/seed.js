@@ -113,7 +113,7 @@ for (const line of dataLines) {
 
     if (!cp || !asentamiento) { skipped++; continue; }
 
-    codigo_postal = cp.trim();
+    codigo_postal = cp.trim().padStart(5, '0');
     colonia = asentamiento.trim();
     tipo_asentamiento = (tipo || '').trim();
     municipio_nombre = (municipio || '').trim();
