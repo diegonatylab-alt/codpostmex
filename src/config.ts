@@ -15,4 +15,4 @@ export function capitalize(text: string): string {
 
 export const SITE_NAME = 'Buscar CP México';
 export const SITE_URL = 'https://buscarcpmexico.com'; // Cambiar por tu dominio real
-export const ADSENSE_ID = 'ca-pub-XXXXXXXXXX'; // Cambiar por tu ID de AdSense real
+export const ADSENSE_ID = 'ca-pub-3904107966422584';
