@@ -157,7 +157,7 @@ for (const line of dataLines) {
   }
 
   // INSERT para código postal
-  const sql = `INSERT INTO codigos_postales (codigo_postal, colonia, tipo_asentamiento, municipio, estado, ciudad, clave_estado, clave_municipio, zona) VALUES ('${escapeSQL(codigo_postal)}', '${escapeSQL(colonia)}', '${escapeSQL(tipo_asentamiento)}', '${escapeSQL(municipio_nombre)}', '${escapeSQL(estado_nombre)}', '${escapeSQL(ciudad)}', '${escapeSQL(clave_estado)}', '${escapeSQL(clave_municipio)}', '${escapeSQL(zona)}');`;
+  const sql = `INSERT OR IGNORE INTO codigos_postales (codigo_postal, colonia, tipo_asentamiento, municipio, estado, ciudad, clave_estado, clave_municipio, zona) VALUES ('${escapeSQL(codigo_postal)}', '${escapeSQL(colonia)}', '${escapeSQL(tipo_asentamiento)}', '${escapeSQL(municipio_nombre)}', '${escapeSQL(estado_nombre)}', '${escapeSQL(ciudad)}', '${escapeSQL(clave_estado)}', '${escapeSQL(clave_municipio)}', '${escapeSQL(zona)}');`;
 
   currentBatch.push(sql);
 
