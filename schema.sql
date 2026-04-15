@@ -17,6 +17,7 @@ CREATE INDEX IF NOT EXISTS idx_codigo_postal ON codigos_postales(codigo_postal);
 CREATE INDEX IF NOT EXISTS idx_estado ON codigos_postales(clave_estado);
 CREATE INDEX IF NOT EXISTS idx_municipio ON codigos_postales(clave_estado, clave_municipio);
 CREATE INDEX IF NOT EXISTS idx_colonia ON codigos_postales(colonia);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_cp_unique ON codigos_postales(codigo_postal, colonia, clave_estado, clave_municipio);
 
 -- Tabla de estados (para navegación y sitemaps)
 CREATE TABLE IF NOT EXISTS estados (
