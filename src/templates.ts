@@ -159,6 +159,7 @@ function layout(opts: {
           <a href="/contacto">Contacto</a> |
           <a href="/acerca-de">Acerca de</a> |
           <a href="/politica-de-privacidad">Política de Privacidad</a> |
+          <a href="/formato-direccion">Formato Dirección</a> |
           <a href="/aviso-legal">Aviso Legal</a> |
         <a href="/sitemap-index.xml">Sitemap</a>
       </p>
@@ -641,6 +642,22 @@ export function codigoPostalPage(
             text: `Las colonias del código postal ${cp} son: ${colonias.map(c => c.colonia).join(', ')}. Todas pertenecen al municipio de ${first.municipio}, ${first.estado}.`,
           },
         },
+        {
+          '@type': 'Question',
+          name: `¿Cómo escribir una dirección con el CP ${cp}?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `Para escribir una dirección con el CP ${cp}: Nombre del destinatario, Calle y número, Col. ${colonias[0].colonia}, C.P. ${cp}, ${first.municipio}, ${first.estado}, México.`,
+          },
+        },
+        {
+          '@type': 'Question',
+          name: `¿El CP ${cp} es zona urbana o rural?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `El código postal ${cp} pertenece a la zona ${(first.zona || 'urbana').toLowerCase()} del municipio de ${first.municipio}, ${first.estado}.`,
+          },
+        },
       ],
     },
   ];
@@ -752,6 +769,22 @@ export function codigoPostalPage(
         <p>El código postal ${cp} se encuentra en el municipio de <strong>${escapeHtml(first.municipio)}</strong>, 
         en el estado de <strong>${escapeHtml(first.estado)}</strong>, México. 
         Este código postal incluye ${colonias.length} colonia(s) y pertenece a la zona ${escapeHtml((first.zona || 'urbana').toLowerCase())}.</p>
+      </div>
+      <div class="card">
+        <h3>¿Cómo escribir una dirección con el CP ${cp}?</h3>
+        <div style="background:#f8f9fa;border:1px solid #dadce0;border-radius:8px;padding:16px;margin:12px 0;font-family:monospace;line-height:2">
+          <div>[Nombre del destinatario]</div>
+          <div>[Calle y número]</div>
+          <div>Col. ${escapeHtml(colonias[0].colonia)}</div>
+          <div>C.P. ${cp}, ${escapeHtml(first.municipio)}</div>
+          <div>${escapeHtml(first.estado)}, México</div>
+        </div>
+        <p style="margin-top:8px;font-size:.9rem">Consulta la <a href="/formato-direccion">guía completa de formato de dirección postal</a> para más detalles.</p>
+      </div>
+      <div class="card">
+        <h3>¿El CP ${cp} es zona urbana o rural?</h3>
+        <p>El código postal ${cp} pertenece a la zona <strong>${escapeHtml((first.zona || 'urbana').toLowerCase())}</strong> 
+        del municipio de ${escapeHtml(first.municipio)}, ${escapeHtml(first.estado)}.</p>
       </div>
       ${mapScript}`,
   });
@@ -908,6 +941,100 @@ export function avisoLegalPage(): string {
         </div>`,
     });
   }
+
+// ============================================================
+// Formato de Dirección Postal
+// ============================================================
+export function formatoDireccionPage(): string {
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'Cómo escribir correctamente una dirección postal en México',
+    description: 'Guía paso a paso para escribir una dirección postal mexicana correctamente, incluyendo el formato oficial de SEPOMEX.',
+    step: [
+      { '@type': 'HowToStep', position: 1, name: 'Nombre del destinatario', text: 'Escribe el nombre completo de la persona o empresa que recibirá el envío.' },
+      { '@type': 'HowToStep', position: 2, name: 'Calle y número', text: 'Indica el nombre de la calle, número exterior y, si aplica, número interior.' },
+      { '@type': 'HowToStep', position: 3, name: 'Colonia', text: 'Escribe el nombre de la colonia o asentamiento.' },
+      { '@type': 'HowToStep', position: 4, name: 'Código postal', text: 'Incluye el código postal de 5 dígitos asignado por SEPOMEX.' },
+      { '@type': 'HowToStep', position: 5, name: 'Municipio y estado', text: 'Agrega el nombre del municipio (o alcaldía) y el estado.' },
+      { '@type': 'HowToStep', position: 6, name: 'País', text: 'Para envíos internacionales, agrega "México" al final.' },
+    ],
+  };
+
+  return layout({
+    title: 'Cómo Escribir una Dirección Postal en México - Formato Correcto 2026',
+    description: 'Aprende el formato correcto para escribir una dirección postal en México. Guía con ejemplos, orden de los campos y tips para envíos por SEPOMEX y paquetería.',
+    canonical: '/formato-direccion',
+    breadcrumbs: [
+      { name: 'Inicio', url: '/' },
+      { name: 'Formato de Dirección', url: '/formato-direccion' },
+    ],
+    structuredData,
+    body: `
+      <div class="card">
+        <h2>Cómo Escribir Correctamente una Dirección Postal en México</h2>
+        <p>El formato correcto de una dirección postal es esencial para que tu correspondencia o paquete llegue sin problemas. En México, el Servicio Postal Mexicano (SEPOMEX) y las empresas de paquetería utilizan un formato estandarizado.</p>
+      </div>
+      ${adSlot('formato-top')}
+      <div class="card">
+        <h3>Formato Oficial de Dirección Postal</h3>
+        <div style="background:#f8f9fa;border:2px solid #006847;border-radius:8px;padding:20px;margin:16px 0;font-family:monospace;line-height:2">
+          <div><strong>Nombre del destinatario</strong></div>
+          <div>Calle Nombre de la Calle #123, Int. 4</div>
+          <div>Colonia Nombre de la Colonia</div>
+          <div>C.P. 01234, Municipio/Alcaldía</div>
+          <div>Estado, México</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Ejemplo Real</h3>
+        <div style="background:#f8f9fa;border:1px solid #dadce0;border-radius:8px;padding:20px;margin:16px 0;font-family:monospace;line-height:2">
+          <div>Juan Pérez López</div>
+          <div>Av. Reforma #456, Piso 3, Of. 301</div>
+          <div>Col. Juárez</div>
+          <div>C.P. 06600, Cuauhtémoc</div>
+          <div>Ciudad de México, México</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Campos de la Dirección Paso a Paso</h3>
+        <table>
+          <thead><tr><th>#</th><th>Campo</th><th>Descripción</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><strong>Destinatario</strong></td><td>Nombre completo de la persona o razón social</td><td>Juan Pérez López</td></tr>
+            <tr><td>2</td><td><strong>Calle y número</strong></td><td>Nombre de la calle, número exterior e interior</td><td>Av. Reforma #456, Int. 301</td></tr>
+            <tr><td>3</td><td><strong>Colonia</strong></td><td>Nombre del asentamiento (colonia, fraccionamiento, pueblo, etc.)</td><td>Col. Juárez</td></tr>
+            <tr><td>4</td><td><strong>Código Postal</strong></td><td>5 dígitos asignados por SEPOMEX</td><td>C.P. 06600</td></tr>
+            <tr><td>5</td><td><strong>Municipio/Alcaldía</strong></td><td>Municipio o delegación/alcaldía</td><td>Cuauhtémoc</td></tr>
+            <tr><td>6</td><td><strong>Estado</strong></td><td>Entidad federativa</td><td>Ciudad de México</td></tr>
+            <tr><td>7</td><td><strong>País</strong></td><td>Solo para envíos internacionales</td><td>México</td></tr>
+          </tbody>
+        </table>
+      </div>
+      ${adSlot('formato-middle')}
+      <div class="card">
+        <h3>Tips para Escribir tu Dirección</h3>
+        <ul style="padding-left:20px;line-height:2">
+          <li>Siempre incluye el <strong>código postal</strong> — es el dato más importante para la entrega.</li>
+          <li>Usa <strong>"Col."</strong> antes del nombre de la colonia para mayor claridad.</li>
+          <li>Si tienes número interior (departamento, oficina, piso), sepáralo con <strong>"Int."</strong></li>
+          <li>Para envíos internacionales, escribe <strong>"México"</strong> o <strong>"Mexico"</strong> como última línea.</li>
+          <li>Escribe el nombre del estado <strong>sin abreviar</strong> para evitar confusiones.</li>
+          <li>Verifica que el código postal corresponda a la colonia usando nuestro <a href="/">buscador de códigos postales</a>.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Preguntas Frecuentes</h3>
+        <h4 style="margin-top:12px">¿Qué pasa si pongo mal el código postal?</h4>
+        <p>Si el código postal no coincide con la colonia, tu envío puede retrasarse o ser devuelto. SEPOMEX y las paqueterías usan el CP como referencia principal para la zona de entrega.</p>
+        <h4 style="margin-top:12px">¿Es obligatorio poner la colonia?</h4>
+        <p>Sí, la colonia es un campo esencial en las direcciones mexicanas. Un mismo código postal puede abarcar varias colonias, por lo que omitirla dificulta la entrega.</p>
+        <h4 style="margin-top:12px">¿Cómo encuentro mi código postal?</h4>
+        <p>Puedes buscarlo en nuestro <a href="/">buscador</a> ingresando el nombre de tu colonia, municipio o estado.</p>
+      </div>
+      ${adSlot('formato-bottom')}`,
+  });
+}
 
 // HTML escape helper
 function escapeHtml(text: string): string {
