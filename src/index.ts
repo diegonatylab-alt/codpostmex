@@ -12,6 +12,7 @@ import {
   contactoPage,
   acercaDePage,
   politicaPrivacidadPage,
+  formatoDireccionPage,
 } from './templates';
 import { slugify, SITE_URL } from './config';
 
@@ -430,6 +431,13 @@ app.get('/politica-de-privacidad', (c) => {
 });
 
 // ============================================================
+// FORMATO DE DIRECCIÓN POSTAL
+// ============================================================
+app.get('/formato-direccion', (c) => {
+  return c.html(formatoDireccionPage());
+});
+
+// ============================================================
 // ADS.TXT (AdSense)
 // ============================================================
 app.get('/ads.txt', (c) => {
@@ -492,6 +500,7 @@ app.get('/sitemaps/pages.xml', async (c) => {
     `  <url><loc>${SITE_URL}/acerca-de</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>`,
     `  <url><loc>${SITE_URL}/politica-de-privacidad</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>`,
     `  <url><loc>${SITE_URL}/aviso-legal</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>`,
+    `  <url><loc>${SITE_URL}/formato-direccion</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`,
     ...estados.results.map(
       (e: any) =>
         `  <url><loc>${SITE_URL}/estado/${e.slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`
