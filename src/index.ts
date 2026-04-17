@@ -42,7 +42,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v9',
+    cacheName: 'buscarcpmexico-v14',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -511,61 +511,66 @@ ${urls.join('\n')}
 // ============================================================
 // SITEMAP por estado (municipios + CPs)
 // ============================================================
-app.get('/sitemaps/:estadoSlug.xml', async (c) => {
-  const estadoSlug = c.req.param('estadoSlug');
+app.get('/sitemaps/:file', async (c) => {
+  const file = c.req.param('file');
+
+  // Validar que termine en .xml y extraer el slug
+  if (!file.endsWith('.xml')) return c.notFound();
+  const estadoSlug = file.replace(/\.xml$/, '');
+
+  // Excluir pages.xml (se maneja en la ruta anterior)
+  if (estadoSlug === 'pages') return c.notFound();
 
   const estado = await c.env.DB.prepare(
-    'SELECT clave, slug FROM estados WHERE slug = ?'
+    'SELECT clave FROM estados WHERE slug = ?'
   )
     .bind(estadoSlug)
     .first();
 
   if (!estado) return c.notFound();
 
-  // Municipios
-  const municipios = await c.env.DB.prepare(
-    'SELECT slug FROM municipios WHERE clave_estado = ?'
-  )
-    .bind(estado.clave)
-    .all();
+  const [munRows, cpRows] = await Promise.all([
+    c.env.DB.prepare(
+      'SELECT slug, clave_municipio FROM municipios WHERE clave_estado = ? ORDER BY slug'
+    )
+      .bind(estado.clave)
+      .all(),
+    c.env.DB.prepare(
+      'SELECT DISTINCT codigo_postal FROM codigos_postales WHERE clave_estado = ? ORDER BY codigo_postal'
+    )
+      .bind(estado.clave)
+      .all(),
+  ]);
 
-  // CPs únicos del estado
-  const cps = await c.env.DB.prepare(
-    'SELECT DISTINCT codigo_postal FROM codigos_postales WHERE clave_estado = ? ORDER BY codigo_postal'
-  )
-    .bind(estado.clave)
-    .all();
-
-  // Colonias únicas por municipio para el sitemap
-  const colonias = await c.env.DB.prepare(`
-    SELECT DISTINCT cp.colonia, cp.municipio, m.slug as municipio_slug
-    FROM codigos_postales cp
-    JOIN municipios m ON m.clave_estado = cp.clave_estado AND m.nombre = cp.municipio
-    WHERE cp.clave_estado = ?
-    ORDER BY cp.municipio, cp.colonia
-  `)
-    .bind(estado.clave)
-    .all();
-
-  const urls = [
-    ...municipios.results.map(
-      (m: any) =>
-        `  <url><loc>${SITE_URL}/estado/${estadoSlug}/${m.slug}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`
-    ),
-    ...cps.results.map(
-      (cp: any) =>
-        `  <url><loc>${SITE_URL}/codigo-postal/${cp.codigo_postal}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>`
-    ),
-    ...colonias.results.map(
-      (col: any) =>
-        `  <url><loc>${SITE_URL}/estado/${estadoSlug}/${col.municipio_slug}/colonia/${slugify(col.colonia)}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>`
-    ),
-  ];
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  const munMap = new Map<string, string>();
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.join('\n')}
-</urlset>`;
+`;
+
+  for (const m of munRows.results as any[]) {
+    munMap.set(String(m.clave_municipio), m.slug);
+    xml += `  <url><loc>${SITE_URL}/estado/${estadoSlug}/${m.slug}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n`;
+  }
+
+  for (const cp of cpRows.results as any[]) {
+    xml += `  <url><loc>${SITE_URL}/codigo-postal/${cp.codigo_postal}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>\n`;
+  }
+
+  // Colonias únicas por municipio
+  const colRows = await c.env.DB.prepare(
+    'SELECT DISTINCT colonia, clave_municipio FROM codigos_postales WHERE clave_estado = ? ORDER BY clave_municipio, colonia'
+  )
+    .bind(estado.clave)
+    .all();
+
+  for (const col of colRows.results as any[]) {
+    const mSlug = munMap.get(String(col.clave_municipio));
+    if (mSlug) {
+      xml += `  <url><loc>${SITE_URL}/estado/${estadoSlug}/${mSlug}/colonia/${slugify(col.colonia)}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>\n`;
+    }
+  }
+
+  xml += `</urlset>`;
 
   return c.newResponse(xml, 200, {
     'Content-Type': 'application/xml',
