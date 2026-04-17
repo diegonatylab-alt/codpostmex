@@ -42,7 +42,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v12',
+    cacheName: 'buscarcpmexico-v13',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -511,8 +511,15 @@ ${urls.join('\n')}
 // ============================================================
 // SITEMAP por estado (municipios + CPs)
 // ============================================================
-app.get('/sitemaps/:estadoSlug.xml', async (c) => {
-  const estadoSlug = c.req.param('estadoSlug');
+app.get('/sitemaps/:file', async (c) => {
+  const file = c.req.param('file');
+
+  // Validar que termine en .xml y extraer el slug
+  if (!file.endsWith('.xml')) return c.notFound();
+  const estadoSlug = file.replace(/\.xml$/, '');
+
+  // Excluir pages.xml (se maneja en la ruta anterior)
+  if (estadoSlug === 'pages') return c.notFound();
 
   const estado = await c.env.DB.prepare(
     'SELECT clave FROM estados WHERE slug = ?'
