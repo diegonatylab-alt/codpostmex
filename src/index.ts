@@ -5,6 +5,7 @@ import {
   estadoPage,
   estadosListPage,
   municipioPage,
+  coloniaPage,
   codigoPostalPage,
   notFoundPage,
   avisoLegalPage,
@@ -12,7 +13,7 @@ import {
   acercaDePage,
   politicaPrivacidadPage,
 } from './templates';
-import { SITE_URL } from './config';
+import { slugify, SITE_URL } from './config';
 
 type Bindings = {
   DB: D1Database;
@@ -212,6 +213,77 @@ app.get('/estado/:estadoSlug/:municipioSlug', async (c) => {
       { nombre: municipio.nombre as string, slug: municipio.slug as string },
       codigos.results as any[],
       stats
+    )
+  );
+});
+
+// ============================================================
+// COLONIA individual
+// ============================================================
+app.get('/estado/:estadoSlug/:municipioSlug/colonia/:coloniaSlug', async (c) => {
+  const estadoSlug = c.req.param('estadoSlug');
+  const municipioSlug = c.req.param('municipioSlug');
+  const coloniaSlug = c.req.param('coloniaSlug');
+
+  const estado = await c.env.DB.prepare(
+    'SELECT clave, nombre, slug FROM estados WHERE slug = ?'
+  )
+    .bind(estadoSlug)
+    .first();
+
+  if (!estado) return c.html(notFoundPage(), 404);
+
+  const municipio = await c.env.DB.prepare(
+    'SELECT nombre, slug, clave_estado, clave_municipio FROM municipios WHERE clave_estado = ? AND slug = ?'
+  )
+    .bind(estado.clave, municipioSlug)
+    .first();
+
+  if (!municipio) return c.html(notFoundPage(), 404);
+
+  // Buscar la colonia por slug generado dinámicamente
+  const allColonias = await c.env.DB.prepare(`
+    SELECT DISTINCT colonia, codigo_postal, tipo_asentamiento, zona, ciudad
+    FROM codigos_postales
+    WHERE clave_estado = ? AND municipio = ?
+    ORDER BY colonia, codigo_postal
+  `)
+    .bind(estado.clave, municipio.nombre)
+    .all();
+
+  // Encontrar la colonia que coincide con el slug
+  const coloniaRows = allColonias.results.filter(
+    (r: any) => slugify(r.colonia) === coloniaSlug
+  );
+
+  if (coloniaRows.length === 0) return c.html(notFoundPage(), 404);
+
+  const coloniaName = (coloniaRows[0] as any).colonia;
+
+  // Obtener coordenadas del primer CP de esta colonia
+  const firstCp = (coloniaRows[0] as any).codigo_postal;
+  const coords = await c.env.DB.prepare(
+    'SELECT latitud, longitud FROM cp_coordenadas WHERE codigo_postal = ?'
+  ).bind(firstCp).first();
+
+  // Colonias vecinas en el mismo municipio (hasta 12, excluyendo la actual)
+  const nearby = allColonias.results
+    .filter((r: any) => slugify(r.colonia) !== coloniaSlug)
+    .reduce((acc: any[], r: any) => {
+      if (!acc.find((a: any) => a.colonia === r.colonia)) acc.push(r);
+      return acc;
+    }, [])
+    .slice(0, 12);
+
+  return c.html(
+    coloniaPage(
+      { nombre: estado.nombre as string, slug: estado.slug as string },
+      { nombre: municipio.nombre as string, slug: municipio.slug as string },
+      coloniaName,
+      coloniaSlug,
+      coloniaRows as any[],
+      nearby as any[],
+      coords ? { lat: coords.latitud as number, lng: coords.longitud as number } : null
     )
   );
 });
@@ -464,6 +536,17 @@ app.get('/sitemaps/:estadoSlug.xml', async (c) => {
     .bind(estado.clave)
     .all();
 
+  // Colonias únicas por municipio para el sitemap
+  const colonias = await c.env.DB.prepare(`
+    SELECT DISTINCT cp.colonia, cp.municipio, m.slug as municipio_slug
+    FROM codigos_postales cp
+    JOIN municipios m ON m.clave_estado = cp.clave_estado AND m.nombre = cp.municipio
+    WHERE cp.clave_estado = ?
+    ORDER BY cp.municipio, cp.colonia
+  `)
+    .bind(estado.clave)
+    .all();
+
   const urls = [
     ...municipios.results.map(
       (m: any) =>
@@ -472,6 +555,10 @@ app.get('/sitemaps/:estadoSlug.xml', async (c) => {
     ...cps.results.map(
       (cp: any) =>
         `  <url><loc>${SITE_URL}/codigo-postal/${cp.codigo_postal}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>`
+    ),
+    ...colonias.results.map(
+      (col: any) =>
+        `  <url><loc>${SITE_URL}/estado/${estadoSlug}/${col.municipio_slug}/colonia/${slugify(col.colonia)}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>`
     ),
   ];
 
