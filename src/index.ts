@@ -181,7 +181,7 @@ app.get('/estado/:estadoSlug/:municipioSlug', async (c) => {
 
   const [codigos, municipioStats] = await Promise.all([
     c.env.DB.prepare(`
-      SELECT codigo_postal, colonia, tipo_asentamiento, zona
+      SELECT DISTINCT codigo_postal, colonia, tipo_asentamiento, zona
       FROM codigos_postales
       WHERE clave_estado = ? AND municipio = ?
       ORDER BY codigo_postal, colonia
@@ -306,7 +306,7 @@ app.get('/codigo-postal/:cp', async (c) => {
   }
 
   const colonias = await c.env.DB.prepare(`
-    SELECT colonia, tipo_asentamiento, municipio, estado, ciudad, zona, clave_estado, clave_municipio
+    SELECT DISTINCT colonia, tipo_asentamiento, municipio, estado, ciudad, zona, clave_estado, clave_municipio
     FROM codigos_postales
     WHERE codigo_postal = ?
     ORDER BY colonia
