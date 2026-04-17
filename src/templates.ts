@@ -1,5 +1,5 @@
 // Templates HTML con SEO optimizado y AdSense
-import { SITE_NAME, SITE_URL, ADSENSE_ID } from './config';
+import { SITE_NAME, SITE_URL, ADSENSE_ID, slugify } from './config';
 
 const ADSENSE_ENABLED = ADSENSE_ID !== 'ca-pub-XXXXXXXXXX';
 
@@ -315,7 +315,7 @@ export function municipioPage(
       c =>
         `<tr>
           <td><a href="/codigo-postal/${c.codigo_postal}">${c.codigo_postal}</a></td>
-          <td>${escapeHtml(c.colonia)}</td>
+          <td><a href="/estado/${estado.slug}/${municipio.slug}/colonia/${slugify(c.colonia)}">${escapeHtml(c.colonia)}</a></td>
           <td><span class="tag">${escapeHtml(c.tipo_asentamiento)}</span></td>
           <td>${escapeHtml(c.zona || '')}</td>
         </tr>`
@@ -363,6 +363,217 @@ export function municipioPage(
 }
 
 // ============================================================
+// Colonia individual
+// ============================================================
+export function coloniaPage(
+  estado: { nombre: string; slug: string },
+  municipio: { nombre: string; slug: string },
+  coloniaName: string,
+  coloniaSlug: string,
+  entries: { codigo_postal: string; tipo_asentamiento: string; zona: string; ciudad: string }[],
+  nearby: { colonia: string; codigo_postal: string }[],
+  coords: { lat: number; lng: number } | null
+): string {
+  const first = entries[0];
+  const uniqueCPs = [...new Set(entries.map(e => e.codigo_postal))];
+  const cpLinks = uniqueCPs
+    .map(cp => `<a href="/codigo-postal/${cp}">${cp}</a>`)
+    .join('');
+
+  const cpListText = uniqueCPs.join(', ');
+
+  const nearbyLinks = nearby
+    .reduce((acc: { colonia: string; slug: string }[], r) => {
+      const s = slugify(r.colonia);
+      if (!acc.find(a => a.slug === s)) acc.push({ colonia: r.colonia, slug: s });
+      return acc;
+    }, [])
+    .map(n => `<a href="/estado/${estado.slug}/${municipio.slug}/colonia/${n.slug}">${escapeHtml(n.colonia)}</a>`)
+    .join('');
+
+  const structuredData: object[] = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Place',
+      name: `${coloniaName}, ${municipio.nombre}, ${estado.nombre}`,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: municipio.nombre,
+        addressRegion: estado.nombre,
+        addressCountry: 'MX',
+        postalCode: uniqueCPs[0],
+      },
+      ...(coords ? {
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: coords.lat,
+          longitude: coords.lng,
+        },
+        hasMap: `https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lng}#map=16/${coords.lat}/${coords.lng}`,
+      } : {}),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: `¿Cuál es el código postal de ${coloniaName}?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: uniqueCPs.length === 1
+              ? `El código postal de ${coloniaName} en ${municipio.nombre}, ${estado.nombre} es ${uniqueCPs[0]}.`
+              : `La colonia ${coloniaName} en ${municipio.nombre}, ${estado.nombre} tiene ${uniqueCPs.length} códigos postales: ${cpListText}.`,
+          },
+        },
+        {
+          '@type': 'Question',
+          name: `¿Dónde se encuentra la colonia ${coloniaName}?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `La colonia ${coloniaName} se encuentra en el municipio de ${municipio.nombre}, estado de ${estado.nombre}, México. Es una zona ${(first.zona || 'urbana').toLowerCase()}.`,
+          },
+        },
+        {
+          '@type': 'Question',
+          name: `¿Qué tipo de asentamiento es ${coloniaName}?`,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `${coloniaName} es de tipo "${first.tipo_asentamiento}" y pertenece a la zona ${(first.zona || 'urbana').toLowerCase()} del municipio de ${municipio.nombre}, ${estado.nombre}.`,
+          },
+        },
+      ],
+    },
+  ];
+
+  const mapSection = coords
+    ? `<div class="card">
+        <h3>Mapa de ${escapeHtml(coloniaName)}</h3>
+        <div id="cp-map"></div>
+      </div>`
+    : '';
+
+  const mapScript = coords
+    ? `<script>
+(function(){
+  var mapEl = document.getElementById('cp-map');
+  if (!mapEl) return;
+  var loaded = false;
+  var observer = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting && !loaded) {
+      loaded = true;
+      observer.disconnect();
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+      var script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.crossOrigin = 'anonymous';
+      script.onload = function() {
+        var map = L.map('cp-map').setView([${coords.lat}, ${coords.lng}], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+        L.marker([${coords.lat}, ${coords.lng}]).addTo(map)
+          .bindPopup('<strong>${escapeHtml(coloniaName)}</strong>')
+          .openPopup();
+        L.circle([${coords.lat}, ${coords.lng}], {
+          color: '#006847',
+          fillColor: '#006847',
+          fillOpacity: 0.1,
+          radius: 400
+        }).addTo(map);
+      };
+      document.body.appendChild(script);
+    }
+  }, { rootMargin: '200px' });
+  observer.observe(mapEl);
+})();
+</script>`
+    : '';
+
+  const cpLabel = uniqueCPs.length === 1 ? 'Código Postal' : 'Códigos Postales';
+
+  return layout({
+    title: `Código Postal de ${coloniaName}, ${municipio.nombre}, ${estado.nombre} - CP ${uniqueCPs[0]}`,
+    description: `El código postal de la colonia ${coloniaName} en ${municipio.nombre}, ${estado.nombre} es ${uniqueCPs.length === 1 ? uniqueCPs[0] : cpListText}. Tipo: ${first.tipo_asentamiento}. Zona: ${first.zona || 'Urbano'}.`,
+    canonical: `/estado/${estado.slug}/${municipio.slug}/colonia/${coloniaSlug}`,
+    breadcrumbs: [
+      { name: 'Inicio', url: '/' },
+      { name: estado.nombre, url: `/estado/${estado.slug}` },
+      { name: municipio.nombre, url: `/estado/${estado.slug}/${municipio.slug}` },
+      { name: coloniaName, url: `/estado/${estado.slug}/${municipio.slug}/colonia/${coloniaSlug}` },
+    ],
+    structuredData,
+    body: `
+      <div class="card">
+        <h2>Código Postal de ${escapeHtml(coloniaName)}</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">${cpLabel}</div>
+            <div class="info-value" style="font-size:1.3rem;font-weight:700;color:#006847">${cpLinks}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Tipo de Asentamiento</div>
+            <div class="info-value"><span class="tag">${escapeHtml(first.tipo_asentamiento)}</span></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Municipio</div>
+            <div class="info-value"><a href="/estado/${estado.slug}/${municipio.slug}">${escapeHtml(municipio.nombre)}</a></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Estado</div>
+            <div class="info-value"><a href="/estado/${estado.slug}">${escapeHtml(estado.nombre)}</a></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Ciudad</div>
+            <div class="info-value">${escapeHtml(first.ciudad || municipio.nombre)}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Zona</div>
+            <div class="info-value">${escapeHtml(first.zona || 'Urbano')}</div>
+          </div>
+        </div>
+      </div>
+      ${adSlot('colonia-top')}
+      ${mapSection}
+      ${uniqueCPs.length > 1 ? `
+      <div class="card">
+        <h3>${cpLabel} de ${escapeHtml(coloniaName)}</h3>
+        <p>La colonia ${escapeHtml(coloniaName)} abarca ${uniqueCPs.length} códigos postales diferentes:</p>
+        <table>
+          <thead><tr><th>Código Postal</th><th>Zona</th></tr></thead>
+          <tbody>${entries.map(e => `<tr><td><a href="/codigo-postal/${e.codigo_postal}">${e.codigo_postal}</a></td><td>${escapeHtml(e.zona || '')}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>` : ''}
+      ${adSlot('colonia-middle')}
+      ${
+        nearby.length > 0
+          ? `<div class="card nearby">
+              <h3>Colonias Cercanas en ${escapeHtml(municipio.nombre)}</h3>
+              ${nearbyLinks}
+            </div>`
+          : ''
+      }
+      ${adSlot('colonia-bottom')}
+      <div class="card">
+        <h3>¿Cuál es el código postal de ${escapeHtml(coloniaName)}?</h3>
+        <p>${uniqueCPs.length === 1
+          ? `El código postal de la colonia <strong>${escapeHtml(coloniaName)}</strong> es <strong>${uniqueCPs[0]}</strong>.`
+          : `La colonia <strong>${escapeHtml(coloniaName)}</strong> tiene ${uniqueCPs.length} códigos postales: <strong>${cpListText}</strong>.`}
+        Esta colonia se encuentra en el municipio de <strong>${escapeHtml(municipio.nombre)}</strong>,
+        en el estado de <strong>${escapeHtml(estado.nombre)}</strong>, México.
+        Es un asentamiento de tipo <strong>${escapeHtml(first.tipo_asentamiento.toLowerCase())}</strong>
+        ubicado en la zona <strong>${escapeHtml((first.zona || 'urbana').toLowerCase())}</strong>.</p>
+      </div>
+      ${mapScript}`,
+  });
+}
+
+// ============================================================
 // Código Postal individual
 // ============================================================
 export function codigoPostalPage(
@@ -378,7 +589,7 @@ export function codigoPostalPage(
     .map(
       c =>
         `<tr>
-          <td>${escapeHtml(c.colonia)}</td>
+          <td><a href="/estado/${estadoSlug}/${municipioSlug}/colonia/${slugify(c.colonia)}">${escapeHtml(c.colonia)}</a></td>
           <td><span class="tag">${escapeHtml(c.tipo_asentamiento)}</span></td>
           <td>${escapeHtml(c.zona || '')}</td>
         </tr>`
