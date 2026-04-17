@@ -538,11 +538,11 @@ app.get('/sitemaps/:estadoSlug.xml', async (c) => {
 
   // Colonias únicas por municipio para el sitemap
   const colonias = await c.env.DB.prepare(`
-    SELECT DISTINCT cp.colonia, cp.municipio, m.slug as municipio_slug
+    SELECT DISTINCT cp.colonia, m.slug as municipio_slug
     FROM codigos_postales cp
-    JOIN municipios m ON m.clave_estado = cp.clave_estado AND m.nombre = cp.municipio
+    JOIN municipios m ON m.clave_estado = cp.clave_estado AND m.clave_municipio = cp.clave_municipio
     WHERE cp.clave_estado = ?
-    ORDER BY cp.municipio, cp.colonia
+    ORDER BY m.slug, cp.colonia
   `)
     .bind(estado.clave)
     .all();
