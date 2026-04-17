@@ -42,7 +42,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v13',
+    cacheName: 'buscarcpmexico-v14',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -531,7 +531,7 @@ app.get('/sitemaps/:file', async (c) => {
 
   const [munRows, cpRows] = await Promise.all([
     c.env.DB.prepare(
-      'SELECT slug FROM municipios WHERE clave_estado = ? ORDER BY slug'
+      'SELECT slug, clave_municipio FROM municipios WHERE clave_estado = ? ORDER BY slug'
     )
       .bind(estado.clave)
       .all(),
@@ -542,16 +542,32 @@ app.get('/sitemaps/:file', async (c) => {
       .all(),
   ]);
 
+  const munMap = new Map<string, string>();
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
 
   for (const m of munRows.results as any[]) {
+    munMap.set(String(m.clave_municipio), m.slug);
     xml += `  <url><loc>${SITE_URL}/estado/${estadoSlug}/${m.slug}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n`;
   }
 
   for (const cp of cpRows.results as any[]) {
     xml += `  <url><loc>${SITE_URL}/codigo-postal/${cp.codigo_postal}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>\n`;
+  }
+
+  // Colonias únicas por municipio
+  const colRows = await c.env.DB.prepare(
+    'SELECT DISTINCT colonia, clave_municipio FROM codigos_postales WHERE clave_estado = ? ORDER BY clave_municipio, colonia'
+  )
+    .bind(estado.clave)
+    .all();
+
+  for (const col of colRows.results as any[]) {
+    const mSlug = munMap.get(String(col.clave_municipio));
+    if (mSlug) {
+      xml += `  <url><loc>${SITE_URL}/estado/${estadoSlug}/${mSlug}/colonia/${slugify(col.colonia)}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>\n`;
+    }
   }
 
   xml += `</urlset>`;
