@@ -42,7 +42,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v10',
+    cacheName: 'buscarcpmexico-v12',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -509,7 +509,7 @@ ${urls.join('\n')}
 });
 
 // ============================================================
-// SITEMAP por estado (municipios + CPs + colonias)
+// SITEMAP por estado (municipios + CPs)
 // ============================================================
 app.get('/sitemaps/:estadoSlug.xml', async (c) => {
   const estadoSlug = c.req.param('estadoSlug');
@@ -522,55 +522,32 @@ app.get('/sitemaps/:estadoSlug.xml', async (c) => {
 
   if (!estado) return c.notFound();
 
-  // Municipios con slug → también sirve como Map para colonias
-  const munRows = await c.env.DB.prepare(
-    'SELECT slug, clave_municipio FROM municipios WHERE clave_estado = ?'
-  )
-    .bind(estado.clave)
-    .all();
-
-  const munMap = new Map<string, string>();
-  const urls: string[] = [];
-
-  for (const m of munRows.results as any[]) {
-    munMap.set(String(m.clave_municipio), m.slug);
-    urls.push(`  <url><loc>${SITE_URL}/estado/${estadoSlug}/${m.slug}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`);
-  }
-
-  // CPs únicos del estado (usa índice idx_estado)
-  const cpRows = await c.env.DB.prepare(
-    'SELECT DISTINCT codigo_postal FROM codigos_postales WHERE clave_estado = ? ORDER BY codigo_postal'
-  )
-    .bind(estado.clave)
-    .all();
-
-  for (const cp of cpRows.results as any[]) {
-    urls.push(`  <url><loc>${SITE_URL}/codigo-postal/${cp.codigo_postal}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>`);
-  }
-
-  // Colonias únicas — SIN JOIN, usa Map para slug del municipio
-  try {
-    const colRows = await c.env.DB.prepare(
-      'SELECT DISTINCT colonia, clave_municipio FROM codigos_postales WHERE clave_estado = ? ORDER BY clave_municipio, colonia'
+  const [munRows, cpRows] = await Promise.all([
+    c.env.DB.prepare(
+      'SELECT slug FROM municipios WHERE clave_estado = ? ORDER BY slug'
     )
       .bind(estado.clave)
-      .all();
+      .all(),
+    c.env.DB.prepare(
+      'SELECT DISTINCT codigo_postal FROM codigos_postales WHERE clave_estado = ? ORDER BY codigo_postal'
+    )
+      .bind(estado.clave)
+      .all(),
+  ]);
 
-    for (const col of colRows.results as any[]) {
-      const mSlug = munMap.get(String(col.clave_municipio));
-      if (mSlug) {
-        urls.push(`  <url><loc>${SITE_URL}/estado/${estadoSlug}/${mSlug}/colonia/${slugify(col.colonia)}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>`);
-      }
-    }
-  } catch {
-    // Si la query de colonias falla por CPU, el sitemap se genera sin ellas
-    // Google las descubrirá por los links internos en las páginas de municipio
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+`;
+
+  for (const m of munRows.results as any[]) {
+    xml += `  <url><loc>${SITE_URL}/estado/${estadoSlug}/${m.slug}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n`;
   }
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.join('\n')}
-</urlset>`;
+  for (const cp of cpRows.results as any[]) {
+    xml += `  <url><loc>${SITE_URL}/codigo-postal/${cp.codigo_postal}</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>\n`;
+  }
+
+  xml += `</urlset>`;
 
   return c.newResponse(xml, 200, {
     'Content-Type': 'application/xml',
