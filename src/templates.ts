@@ -90,6 +90,9 @@ function layout(opts: {
     .nearby a{display:inline-block;margin:4px;padding:6px 14px;background:#e6f2ec;color:#005538;border-radius:16px;text-decoration:none;font-size:.9rem}
     .nearby a:hover{background:#ccdfcf}
     #cp-map{height:350px;border-radius:8px;margin-top:12px;background:#e8eaed}
+    .address-box{background:#f8f9fa;border-radius:8px;padding:20px;margin:16px 0;font-family:monospace;line-height:2;color:#212529}
+    .address-box--official{border:2px solid #006847}
+    .address-box--example{border:1px solid #dadce0}
     @media(max-width:600px){
       .info-grid{grid-template-columns:1fr}
       .grid{grid-template-columns:1fr 1fr}
@@ -122,6 +125,9 @@ function layout(opts: {
       .cp-big{color:#66bb6a}
       a{color:#66bb6a}
       #cp-map{background:#333}
+      .address-box{background:#1e1e1e;color:#e0e0e0}
+      .address-box--official{border-color:#66bb6a}
+      .address-box--example{border-color:#444}
     }
   </style>
   ${
@@ -235,6 +241,11 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
         <p>El código postal (CP) es un número de 5 dígitos asignado por el Servicio Postal Mexicano (SEPOMEX) 
         para identificar cada zona de entrega de correspondencia en México. Cada código postal puede incluir 
         una o más colonias dentro de un municipio.</p>
+      </div>
+      <div class="card">
+        <h3>📮 ¿Cómo escribir correctamente una dirección postal?</h3>
+        <p>Conoce el formato oficial de SEPOMEX, el orden correcto de los campos y ejemplos reales para que tus envíos lleguen sin problemas.</p>
+        <p style="margin-top:12px"><a href="/formato-direccion" style="display:inline-block;padding:10px 20px;background:#006847;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Ver guía de formato de dirección →</a></p>
       </div>
       <script>
         const searchInput = document.getElementById('search');
@@ -772,7 +783,7 @@ export function codigoPostalPage(
       </div>
       <div class="card">
         <h3>¿Cómo escribir una dirección con el CP ${cp}?</h3>
-        <div style="background:#f8f9fa;border:1px solid #dadce0;border-radius:8px;padding:16px;margin:12px 0;font-family:monospace;line-height:2">
+        <div class="address-box address-box--example">
           <div>[Nombre del destinatario]</div>
           <div>[Calle y número]</div>
           <div>Col. ${escapeHtml(colonias[0].colonia)}</div>
@@ -978,7 +989,7 @@ export function formatoDireccionPage(): string {
       ${adSlot('formato-top')}
       <div class="card">
         <h3>Formato Oficial de Dirección Postal</h3>
-        <div style="background:#f8f9fa;border:2px solid #006847;border-radius:8px;padding:20px;margin:16px 0;font-family:monospace;line-height:2">
+        <div class="address-box address-box--official">
           <div><strong>Nombre del destinatario</strong></div>
           <div>Calle Nombre de la Calle #123, Int. 4</div>
           <div>Colonia Nombre de la Colonia</div>
@@ -988,7 +999,7 @@ export function formatoDireccionPage(): string {
       </div>
       <div class="card">
         <h3>Ejemplo Real</h3>
-        <div style="background:#f8f9fa;border:1px solid #dadce0;border-radius:8px;padding:20px;margin:16px 0;font-family:monospace;line-height:2">
+        <div class="address-box address-box--example">
           <div>Juan Pérez López</div>
           <div>Av. Reforma #456, Piso 3, Of. 301</div>
           <div>Col. Juárez</div>
