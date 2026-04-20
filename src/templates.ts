@@ -93,6 +93,17 @@ function layout(opts: {
     .address-box{background:#f8f9fa;border-radius:8px;padding:20px;margin:16px 0;font-family:monospace;line-height:2;color:#212529}
     .address-box--official{border:2px solid #006847}
     .address-box--example{border:1px solid #dadce0}
+    .result-box{padding:16px;border-radius:8px;margin-top:8px}
+    .result-box--ok{background:#e8f5e9;border:1px solid #a5d6a7}
+    .result-box--ok h3{color:#2e7d32}
+    .result-box--ok .info-item{background:#c8e6c9}
+    .result-box--err{background:#fce4ec;border:1px solid #ef9a9a}
+    .result-box--err h3{color:#c62828}
+    .result-big{font-size:2rem;font-weight:700;color:#2e7d32}
+    .tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .tools-grid a{display:block;padding:16px;background:#fff;border:1px solid #e8eaed;border-radius:8px;text-decoration:none;color:#202124;transition:box-shadow .2s}
+    .tools-grid a:hover{box-shadow:0 2px 8px rgba(0,0,0,.12);border-color:#006847}
+    @media(max-width:700px){.tools-grid{grid-template-columns:1fr}}
     @media(max-width:600px){
       .info-grid{grid-template-columns:1fr}
       .grid{grid-template-columns:1fr 1fr}
@@ -128,6 +139,17 @@ function layout(opts: {
       .address-box{background:#1e1e1e;color:#e0e0e0}
       .address-box--official{border-color:#66bb6a}
       .address-box--example{border-color:#444}
+      .result-box--ok{background:#1b3a2a;border-color:#2e7d32}
+      .result-box--ok h3{color:#66bb6a}
+      .result-box--ok .info-item{background:#1a3328}
+      .result-box--ok .info-label{color:#81c784}
+      .result-box--ok a{color:#66bb6a}
+      .result-box--err{background:#3e1a1a;border-color:#c62828}
+      .result-box--err h3{color:#ef9a9a}
+      .result-box--err p{color:#e0e0e0}
+      .result-big{color:#66bb6a}
+      .tools-grid a{background:#2d2d2d;border-color:#444;color:#e0e0e0}
+      .tools-grid a:hover{box-shadow:0 2px 8px rgba(0,0,0,.3);border-color:#66bb6a}
     }
   </style>
   ${
@@ -255,10 +277,10 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
       </div>
       <div class="card">
         <h3>✅ Herramientas de códigos postales</h3>
-        <div class="grid">
-          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un código postal existe</small></a>
-          <a href="/buscar-por-ubicacion"><strong>Buscar por Ubicación</strong><br><small>Encuentra el CP más cercano a ti</small></a>
-          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km entre dos códigos postales</small></a>
+        <div class="tools-grid">
+          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un CP existe</small></a>
+          <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra el CP más cercano</small></a>
+          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km entre dos CPs</small></a>
         </div>
       </div>
       <script>
@@ -1014,13 +1036,13 @@ export function validarCPPage(): string {
     result.innerHTML = '<p style="color:#4a4a4a;padding:8px">Verificando...</p>';
     fetch('/api/validar-cp?cp=' + cp).then(function(r){return r.json()}).then(function(data){
       if (!data.valid) {
-        result.innerHTML = '<div style="padding:16px;background:#fce4ec;border-radius:8px;border:1px solid #ef9a9a"><h3 style="color:#c62828;margin-bottom:8px">✗ CP ' + cp + ' no encontrado</h3><p>Este código postal no existe en la base de datos de SEPOMEX. Verifica que los 5 dígitos sean correctos.</p></div>';
+        result.innerHTML = '<div class="result-box result-box--err"><h3>✗ CP ' + cp + ' no encontrado</h3><p>Este código postal no existe en la base de datos de SEPOMEX. Verifica que los 5 dígitos sean correctos.</p></div>';
         return;
       }
       var d = data.data;
       var colList = d.colonias.map(function(c){return '<a href="/estado/' + d.estadoSlug + '/' + d.municipioSlug + '/colonia/' + c.slug + '">' + c.nombre + '</a>'}).join(', ');
-      result.innerHTML = '<div style="padding:16px;background:#e8f5e9;border-radius:8px;border:1px solid #a5d6a7">' +
-        '<h3 style="color:#2e7d32;margin-bottom:12px">✓ CP ' + cp + ' es válido</h3>' +
+      result.innerHTML = '<div class="result-box result-box--ok">' +
+        '<h3>✓ CP ' + cp + ' es válido</h3>' +
         '<div class="info-grid">' +
         '<div class="info-item"><div class="info-label">Estado</div><div class="info-value"><a href="/estado/' + d.estadoSlug + '">' + d.estado + '</a></div></div>' +
         '<div class="info-item"><div class="info-label">Municipio</div><div class="info-value"><a href="/estado/' + d.estadoSlug + '/' + d.municipioSlug + '">' + d.municipio + '</a></div></div>' +
@@ -1091,7 +1113,7 @@ export function buscarPorUbicacionPage(): string {
         html += '<tr><td><a href="/codigo-postal/' + r.codigo_postal + '">' + r.codigo_postal + '</a></td><td>' + r.distancia + '</td><td>' + r.municipio + '</td><td>' + r.estado + '</td></tr>';
       });
       html += '</tbody></table>';
-      result.innerHTML = '<div style="padding:16px;background:#e8f5e9;border-radius:8px;border:1px solid #a5d6a7"><h3 style="color:#2e7d32;margin-bottom:8px">Códigos postales cercanos a ' + parseFloat(lat).toFixed(4) + ', ' + parseFloat(lng).toFixed(4) + '</h3>' + html + '</div>';
+      result.innerHTML = '<div class="result-box result-box--ok"><h3>Códigos postales cercanos a ' + parseFloat(lat).toFixed(4) + ', ' + parseFloat(lng).toFixed(4) + '</h3>' + html + '</div>';
     });
   }
   geoBtn.addEventListener('click', function(){
@@ -1179,8 +1201,8 @@ export function distanciaCPPage(): string {
         result.innerHTML = '<p style="color:#d32f2f;padding:8px">⚠ ' + data.error + '</p>';
         return;
       }
-      result.innerHTML = '<div style="padding:20px;background:#e8f5e9;border-radius:8px;border:1px solid #a5d6a7;text-align:center">' +
-        '<div style="font-size:2rem;font-weight:700;color:#2e7d32">' + data.distancia_km + ' km</div>' +
+      result.innerHTML = '<div class="result-box result-box--ok" style="text-align:center">' +
+        '<div class="result-big">' + data.distancia_km + ' km</div>' +
         '<p style="margin-top:8px;color:#4a4a4a">Distancia en línea recta</p>' +
         '<div class="info-grid" style="text-align:left;margin-top:16px">' +
         '<div class="info-item"><div class="info-label">Origen — CP ' + v1 + '</div><div class="info-value"><a href="/codigo-postal/' + v1 + '">' + data.origen.municipio + ', ' + data.origen.estado + '</a></div></div>' +
