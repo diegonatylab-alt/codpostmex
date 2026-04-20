@@ -1479,23 +1479,113 @@ export function prefijosPage(
     )
     .join('');
 
+  const totalCPs = prefijos.reduce((sum, p) => sum + p.count, 0);
+
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: '¿Qué significan los primeros dos dígitos de un código postal en México?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Los primeros dos dígitos de un código postal mexicano identifican el estado o región geográfica. Por ejemplo, los CPs que inician con 01-16 pertenecen a Ciudad de México, los que inician con 20 a Aguascalientes, y los que inician con 97-98 a Yucatán. Este sistema permite organizar la distribución postal a nivel nacional.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Cuántos códigos postales hay en México?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `México cuenta con más de ${totalCPs.toLocaleString('es-MX')} códigos postales activos, distribuidos en 32 estados. Cada código postal tiene 5 dígitos y es asignado por el Servicio Postal Mexicano (SEPOMEX). Los códigos se agrupan en rangos de prefijos que corresponden a diferentes regiones del país.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Cómo están organizados los códigos postales de México?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Los códigos postales de México siguen un sistema numérico de 5 dígitos. Los primeros 2 dígitos indican el estado o región, el tercer dígito identifica una zona dentro del estado, y los últimos 2 dígitos especifican el área de entrega (colonia o grupo de colonias). Los prefijos van del 01 al 99 y se asignan geográficamente de sur a norte y de centro a periferia.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Por qué algunos estados tienen más prefijos que otros?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Los estados con mayor población y más municipios necesitan más códigos postales, por lo que se les asignan más prefijos. Por ejemplo, Ciudad de México (la zona más densamente poblada) usa los prefijos 01 al 16, mientras que estados menos poblados como Colima o Tlaxcala usan solo uno o dos prefijos.',
+        },
+      },
+    ],
+  };
+
   return layout({
-    title: 'Códigos Postales de México por Prefijo - Navegar por Rango de CP',
-    description: 'Explora todos los códigos postales de México organizados por prefijo (primeros 2 dígitos). Encuentra rápidamente el rango de CP de tu zona.',
+    title: 'Códigos Postales de México por Prefijo 2026 - Todos los Rangos de CP',
+    description: `Explora los ${totalCPs.toLocaleString('es-MX')}+ códigos postales de México organizados por prefijo (primeros 2 dígitos). Tabla completa de rangos, estados y cantidad de CPs por región.`,
     canonical: '/codigos-postales',
     breadcrumbs: [
       { name: 'Inicio', url: '/' },
       { name: 'Códigos Postales por Prefijo', url: '/codigos-postales' },
     ],
+    structuredData,
     body: `
       <div class="card">
-        <h2>Códigos Postales por Prefijo</h2>
-        <p>Los códigos postales de México tienen 5 dígitos. Los primeros dos dígitos indican la región o estado al que pertenece el código. Selecciona un prefijo para ver todos los códigos postales de ese rango.</p>
+        <h2>Códigos Postales de México por Prefijo</h2>
+        <p>Los códigos postales de México tienen <strong>5 dígitos</strong> y son asignados por el Servicio Postal Mexicano (SEPOMEX). Los <strong>primeros dos dígitos</strong> (prefijo) indican el estado o región geográfica a la que pertenece el código. Selecciona un prefijo para explorar todos los códigos postales de ese rango.</p>
+        <p style="margin-top:8px">En total, México cuenta con más de <strong>${totalCPs.toLocaleString('es-MX')}</strong> códigos postales distribuidos en <strong>${prefijos.length} prefijos</strong> activos.</p>
       </div>
       ${adSlot('prefijos-top')}
       <div class="card">
         <h2>Todos los Prefijos</h2>
         <div class="grid">${grid}</div>
+      </div>
+      ${adSlot('prefijos-middle')}
+      <div class="card">
+        <h3>¿Cómo se organizan los códigos postales en México?</h3>
+        <p>El sistema de códigos postales mexicano sigue una lógica geográfica basada en 5 dígitos numéricos:</p>
+        <table>
+          <thead><tr><th>Posición</th><th>Dígitos</th><th>Significado</th><th>Ejemplo (CP 44100)</th></tr></thead>
+          <tbody>
+            <tr><td>Prefijo</td><td><strong>1-2</strong></td><td>Estado o región geográfica</td><td>44 → Jalisco</td></tr>
+            <tr><td>Zona</td><td><strong>3</strong></td><td>Zona dentro del estado</td><td>1 → Zona centro de Guadalajara</td></tr>
+            <tr><td>Área</td><td><strong>4-5</strong></td><td>Colonia o grupo de colonias</td><td>00 → Centro histórico</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:12px">Los prefijos se asignan geográficamente: los números más bajos (01-16) corresponden a Ciudad de México y los más altos (90-99) a estados del sureste como Tabasco, Yucatán y Quintana Roo.</p>
+      </div>
+      <div class="card">
+        <h3>Distribución de prefijos por región</h3>
+        <p>México se divide en regiones que agrupan varios prefijos de códigos postales:</p>
+        <table>
+          <thead><tr><th>Región</th><th>Prefijos</th><th>Estados principales</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Centro</strong></td><td>01-16</td><td>Ciudad de México</td></tr>
+            <tr><td><strong>Centro-Norte</strong></td><td>20-49</td><td>Aguascalientes, Guanajuato, Jalisco, San Luis Potosí, Querétaro, Zacatecas</td></tr>
+            <tr><td><strong>Norte</strong></td><td>50-69</td><td>Estado de México, Chihuahua, Coahuila, Nuevo León, Tamaulipas</td></tr>
+            <tr><td><strong>Pacífico</strong></td><td>40-49, 60-63, 80-85</td><td>Jalisco, Nayarit, Sinaloa, Sonora, Baja California</td></tr>
+            <tr><td><strong>Sur-Sureste</strong></td><td>29-30, 68-73, 86-97</td><td>Oaxaca, Chiapas, Veracruz, Tabasco, Yucatán, Quintana Roo</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Preguntas frecuentes sobre prefijos de CP</h3>
+        <h4 style="margin-top:12px">¿Cuántos dígitos tiene un código postal en México?</h4>
+        <p>Todos los códigos postales mexicanos tienen exactamente <strong>5 dígitos</strong>. No existen CPs con menos o más dígitos. Si tu código postal tiene menos de 5 dígitos, agrega ceros a la izquierda (ejemplo: 1000 → 01000).</p>
+        <h4 style="margin-top:12px">¿Puede un mismo prefijo pertenecer a varios estados?</h4>
+        <p>Sí, en algunos casos un prefijo abarca más de un estado, especialmente en zonas limítrofes. Por ejemplo, algunos prefijos cubren tanto municipios de un estado como de su vecino.</p>
+        <h4 style="margin-top:12px">¿Se crean nuevos prefijos?</h4>
+        <p>Los prefijos existentes son estables, pero SEPOMEX puede crear nuevos códigos postales dentro de los rangos existentes cuando se desarrollan nuevas colonias o fraccionamientos. No se han creado nuevos prefijos en los últimos años.</p>
+        <h4 style="margin-top:12px">¿Cómo saber de qué estado es un código postal?</h4>
+        <p>Mira los primeros 2 dígitos del código postal y búscalos en la tabla de prefijos de esta página. También puedes usar nuestro <a href="/validar-cp">validador de códigos postales</a> para obtener toda la información de un CP específico.</p>
+      </div>
+      <div class="card">
+        <h3>Herramientas relacionadas</h3>
+        <div class="tools-grid">
+          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un CP existe</small></a>
+          <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra el CP más cercano</small></a>
+          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km en línea recta</small></a>
+        </div>
       </div>
       ${adSlot('prefijos-bottom')}`,
   });
