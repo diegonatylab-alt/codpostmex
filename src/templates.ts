@@ -253,6 +253,14 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
         <p>Los primeros 2 dígitos del CP indican la región. Explora todos los rangos de códigos postales de México.</p>
         <p style="margin-top:12px"><a href="/codigos-postales" style="display:inline-block;padding:10px 20px;background:#006847;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Ver prefijos de CP →</a></p>
       </div>
+      <div class="card">
+        <h3>✅ Herramientas de códigos postales</h3>
+        <div class="grid">
+          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un código postal existe</small></a>
+          <a href="/buscar-por-ubicacion"><strong>Buscar por Ubicación</strong><br><small>Encuentra el CP más cercano a ti</small></a>
+          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km entre dos códigos postales</small></a>
+        </div>
+      </div>
       <script>
         const searchInput = document.getElementById('search');
         const resultsDiv = document.getElementById('results');
@@ -958,6 +966,234 @@ export function avisoLegalPage(): string {
         </div>`,
     });
   }
+
+// ============================================================
+// Validador de CP
+// ============================================================
+export function validarCPPage(): string {
+  return layout({
+    title: 'Validar Código Postal de México - Verificar si un CP Existe',
+    description: 'Verifica si un código postal mexicano es válido. Ingresa los 5 dígitos y consulta a qué municipio, estado y colonias pertenece.',
+    canonical: '/validar-cp',
+    breadcrumbs: [
+      { name: 'Inicio', url: '/' },
+      { name: 'Validar CP', url: '/validar-cp' },
+    ],
+    body: `
+      <div class="card">
+        <h2>Validar Código Postal</h2>
+        <p>Ingresa un código postal de 5 dígitos para verificar si existe en la base de datos de SEPOMEX y consultar su información.</p>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <input type="text" class="search-box" id="cp-input" placeholder="Ej. 06600" maxlength="5" pattern="\\d{5}" inputmode="numeric" style="margin-bottom:0;flex:1">
+          <button id="cp-btn" style="padding:12px 24px;background:#006847;color:#fff;border:none;border-radius:24px;font-size:1rem;cursor:pointer;font-weight:600;white-space:nowrap">Validar</button>
+        </div>
+        <div id="cp-result" style="margin-top:16px"></div>
+      </div>
+      ${adSlot('validar-top')}
+      <div class="card">
+        <h3>¿Para qué validar un código postal?</h3>
+        <ul style="padding-left:20px;line-height:2">
+          <li>Verificar que un CP existe antes de enviar un paquete o carta.</li>
+          <li>Confirmar que el CP corresponde al municipio y estado correctos.</li>
+          <li>Validar datos de formularios de registro o e-commerce.</li>
+          <li>Comprobar la zona (urbana/rural) de un código postal.</li>
+        </ul>
+      </div>
+      ${adSlot('validar-bottom')}
+      <script>
+(function(){
+  var input = document.getElementById('cp-input');
+  var btn = document.getElementById('cp-btn');
+  var result = document.getElementById('cp-result');
+  function validate() {
+    var cp = input.value.trim();
+    if (!/^\\d{5}$/.test(cp)) {
+      result.innerHTML = '<p style="color:#d32f2f;padding:8px">⚠ Ingresa exactamente 5 dígitos.</p>';
+      return;
+    }
+    result.innerHTML = '<p style="color:#4a4a4a;padding:8px">Verificando...</p>';
+    fetch('/api/validar-cp?cp=' + cp).then(function(r){return r.json()}).then(function(data){
+      if (!data.valid) {
+        result.innerHTML = '<div style="padding:16px;background:#fce4ec;border-radius:8px;border:1px solid #ef9a9a"><h3 style="color:#c62828;margin-bottom:8px">✗ CP ' + cp + ' no encontrado</h3><p>Este código postal no existe en la base de datos de SEPOMEX. Verifica que los 5 dígitos sean correctos.</p></div>';
+        return;
+      }
+      var d = data.data;
+      var colList = d.colonias.map(function(c){return '<a href="/estado/' + d.estadoSlug + '/' + d.municipioSlug + '/colonia/' + c.slug + '">' + c.nombre + '</a>'}).join(', ');
+      result.innerHTML = '<div style="padding:16px;background:#e8f5e9;border-radius:8px;border:1px solid #a5d6a7">' +
+        '<h3 style="color:#2e7d32;margin-bottom:12px">✓ CP ' + cp + ' es válido</h3>' +
+        '<div class="info-grid">' +
+        '<div class="info-item"><div class="info-label">Estado</div><div class="info-value"><a href="/estado/' + d.estadoSlug + '">' + d.estado + '</a></div></div>' +
+        '<div class="info-item"><div class="info-label">Municipio</div><div class="info-value"><a href="/estado/' + d.estadoSlug + '/' + d.municipioSlug + '">' + d.municipio + '</a></div></div>' +
+        '<div class="info-item"><div class="info-label">Zona</div><div class="info-value">' + d.zona + '</div></div>' +
+        '<div class="info-item"><div class="info-label">Colonias</div><div class="info-value">' + d.colonias.length + '</div></div>' +
+        '</div>' +
+        '<p style="margin-top:12px"><strong>Colonias:</strong> ' + colList + '</p>' +
+        '<p style="margin-top:8px"><a href="/codigo-postal/' + cp + '">Ver página completa del CP ' + cp + ' →</a></p>' +
+        '</div>';
+    });
+  }
+  btn.addEventListener('click', validate);
+  input.addEventListener('keydown', function(e){ if(e.key==='Enter') validate(); });
+})();
+      </script>`,
+  });
+}
+
+// ============================================================
+// Búsqueda inversa coordenadas → CP
+// ============================================================
+export function buscarPorUbicacionPage(): string {
+  return layout({
+    title: 'Buscar Código Postal por Ubicación - Coordenadas GPS a CP',
+    description: 'Encuentra el código postal más cercano a tu ubicación GPS. Usa tu ubicación actual o ingresa coordenadas para obtener el CP correspondiente.',
+    canonical: '/buscar-por-ubicacion',
+    breadcrumbs: [
+      { name: 'Inicio', url: '/' },
+      { name: 'Buscar por Ubicación', url: '/buscar-por-ubicacion' },
+    ],
+    body: `
+      <div class="card">
+        <h2>Buscar CP por Ubicación</h2>
+        <p>Encuentra el código postal más cercano a unas coordenadas GPS o usa tu ubicación actual.</p>
+        <div style="margin-top:16px">
+          <button id="geo-btn" style="padding:12px 24px;background:#006847;color:#fff;border:none;border-radius:24px;font-size:1rem;cursor:pointer;font-weight:600;width:100%">📍 Usar mi ubicación actual</button>
+        </div>
+        <p style="text-align:center;margin:12px 0;color:#4a4a4a;font-size:.9rem">— o ingresa coordenadas manualmente —</p>
+        <div style="display:flex;gap:8px">
+          <input type="text" class="search-box" id="lat-input" placeholder="Latitud (ej. 19.4326)" inputmode="decimal" style="margin-bottom:0;flex:1">
+          <input type="text" class="search-box" id="lng-input" placeholder="Longitud (ej. -99.1332)" inputmode="decimal" style="margin-bottom:0;flex:1">
+        </div>
+        <button id="coord-btn" style="margin-top:8px;padding:12px 24px;background:#006847;color:#fff;border:none;border-radius:24px;font-size:1rem;cursor:pointer;font-weight:600;width:100%">Buscar CP</button>
+        <div id="geo-result" style="margin-top:16px"></div>
+      </div>
+      ${adSlot('ubicacion-top')}
+      <div class="card">
+        <h3>¿Cómo funciona?</h3>
+        <p>Buscamos en nuestra base de datos de coordenadas el código postal cuyo centro geográfico esté más cerca del punto que indiques. La precisión es aproximada (centroide del CP).</p>
+      </div>
+      ${adSlot('ubicacion-bottom')}
+      <script>
+(function(){
+  var geoBtn = document.getElementById('geo-btn');
+  var coordBtn = document.getElementById('coord-btn');
+  var latInput = document.getElementById('lat-input');
+  var lngInput = document.getElementById('lng-input');
+  var result = document.getElementById('geo-result');
+  function search(lat, lng) {
+    result.innerHTML = '<p style="color:#4a4a4a;padding:8px">Buscando códigos postales cercanos...</p>';
+    fetch('/api/coordenadas-cp?lat=' + lat + '&lng=' + lng).then(function(r){return r.json()}).then(function(data){
+      if (!data.results || data.results.length === 0) {
+        result.innerHTML = '<p style="color:#d32f2f;padding:8px">No se encontraron códigos postales cercanos.</p>';
+        return;
+      }
+      var html = '<table><thead><tr><th>CP</th><th>Distancia</th><th>Municipio</th><th>Estado</th></tr></thead><tbody>';
+      data.results.forEach(function(r){
+        html += '<tr><td><a href="/codigo-postal/' + r.codigo_postal + '">' + r.codigo_postal + '</a></td><td>' + r.distancia + '</td><td>' + r.municipio + '</td><td>' + r.estado + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      result.innerHTML = '<div style="padding:16px;background:#e8f5e9;border-radius:8px;border:1px solid #a5d6a7"><h3 style="color:#2e7d32;margin-bottom:8px">Códigos postales cercanos a ' + parseFloat(lat).toFixed(4) + ', ' + parseFloat(lng).toFixed(4) + '</h3>' + html + '</div>';
+    });
+  }
+  geoBtn.addEventListener('click', function(){
+    if (!navigator.geolocation) { result.innerHTML = '<p style="color:#d32f2f">Tu navegador no soporta geolocalización.</p>'; return; }
+    geoBtn.textContent = 'Obteniendo ubicación...';
+    navigator.geolocation.getCurrentPosition(function(pos){
+      latInput.value = pos.coords.latitude.toFixed(6);
+      lngInput.value = pos.coords.longitude.toFixed(6);
+      geoBtn.textContent = '📍 Usar mi ubicación actual';
+      search(pos.coords.latitude, pos.coords.longitude);
+    }, function(){
+      geoBtn.textContent = '📍 Usar mi ubicación actual';
+      result.innerHTML = '<p style="color:#d32f2f">No se pudo obtener tu ubicación. Permite el acceso o ingresa coordenadas manualmente.</p>';
+    });
+  });
+  coordBtn.addEventListener('click', function(){
+    var lat = parseFloat(latInput.value), lng = parseFloat(lngInput.value);
+    if (isNaN(lat) || isNaN(lng) || lat < 14 || lat > 33 || lng < -118 || lng > -86) {
+      result.innerHTML = '<p style="color:#d32f2f">Coordenadas inválidas. Latitud: 14-33, Longitud: -118 a -86 (México).</p>';
+      return;
+    }
+    search(lat, lng);
+  });
+})();
+      </script>`,
+  });
+}
+
+// ============================================================
+// Calculadora de distancia entre CPs
+// ============================================================
+export function distanciaCPPage(): string {
+  return layout({
+    title: 'Calcular Distancia entre Códigos Postales de México',
+    description: 'Calcula la distancia en kilómetros entre dos códigos postales de México en línea recta. Herramienta gratuita para estimar distancias de envío.',
+    canonical: '/distancia',
+    breadcrumbs: [
+      { name: 'Inicio', url: '/' },
+      { name: 'Distancia entre CPs', url: '/distancia' },
+    ],
+    body: `
+      <div class="card">
+        <h2>Calcular Distancia entre Códigos Postales</h2>
+        <p>Ingresa dos códigos postales para calcular la distancia aproximada en línea recta entre ellos.</p>
+        <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+          <input type="text" class="search-box" id="cp1" placeholder="CP origen (ej. 06600)" maxlength="5" inputmode="numeric" style="margin-bottom:0;flex:1;min-width:140px">
+          <input type="text" class="search-box" id="cp2" placeholder="CP destino (ej. 44100)" maxlength="5" inputmode="numeric" style="margin-bottom:0;flex:1;min-width:140px">
+          <button id="dist-btn" style="padding:12px 24px;background:#006847;color:#fff;border:none;border-radius:24px;font-size:1rem;cursor:pointer;font-weight:600;white-space:nowrap">Calcular</button>
+        </div>
+        <div id="dist-result" style="margin-top:16px"></div>
+      </div>
+      ${adSlot('distancia-top')}
+      <div class="card">
+        <h3>¿Cómo se calcula?</h3>
+        <p>Usamos la fórmula de <strong>Haversine</strong> para calcular la distancia en línea recta (geodésica) entre los centroides de cada código postal. La distancia real por carretera puede ser mayor.</p>
+      </div>
+      <div class="card">
+        <h3>Usos comunes</h3>
+        <ul style="padding-left:20px;line-height:2">
+          <li>Estimar costos de envío por paquetería.</li>
+          <li>Comparar distancias entre sucursales o puntos de venta.</li>
+          <li>Calcular zonas de cobertura para servicios de entrega.</li>
+        </ul>
+      </div>
+      ${adSlot('distancia-bottom')}
+      <script>
+(function(){
+  var cp1 = document.getElementById('cp1');
+  var cp2 = document.getElementById('cp2');
+  var btn = document.getElementById('dist-btn');
+  var result = document.getElementById('dist-result');
+  function calc() {
+    var v1 = cp1.value.trim(), v2 = cp2.value.trim();
+    if (!/^\\d{5}$/.test(v1) || !/^\\d{5}$/.test(v2)) {
+      result.innerHTML = '<p style="color:#d32f2f;padding:8px">⚠ Ingresa dos códigos postales válidos de 5 dígitos.</p>';
+      return;
+    }
+    if (v1 === v2) {
+      result.innerHTML = '<p style="color:#4a4a4a;padding:8px">Los códigos postales son iguales. La distancia es 0 km.</p>';
+      return;
+    }
+    result.innerHTML = '<p style="color:#4a4a4a;padding:8px">Calculando...</p>';
+    fetch('/api/distancia?cp1=' + v1 + '&cp2=' + v2).then(function(r){return r.json()}).then(function(data){
+      if (data.error) {
+        result.innerHTML = '<p style="color:#d32f2f;padding:8px">⚠ ' + data.error + '</p>';
+        return;
+      }
+      result.innerHTML = '<div style="padding:20px;background:#e8f5e9;border-radius:8px;border:1px solid #a5d6a7;text-align:center">' +
+        '<div style="font-size:2rem;font-weight:700;color:#2e7d32">' + data.distancia_km + ' km</div>' +
+        '<p style="margin-top:8px;color:#4a4a4a">Distancia en línea recta</p>' +
+        '<div class="info-grid" style="text-align:left;margin-top:16px">' +
+        '<div class="info-item"><div class="info-label">Origen — CP ' + v1 + '</div><div class="info-value"><a href="/codigo-postal/' + v1 + '">' + data.origen.municipio + ', ' + data.origen.estado + '</a></div></div>' +
+        '<div class="info-item"><div class="info-label">Destino — CP ' + v2 + '</div><div class="info-value"><a href="/codigo-postal/' + v2 + '">' + data.destino.municipio + ', ' + data.destino.estado + '</a></div></div>' +
+        '</div></div>';
+    });
+  }
+  btn.addEventListener('click', calc);
+  cp2.addEventListener('keydown', function(e){ if(e.key==='Enter') calc(); });
+})();
+      </script>`,
+  });
+}
 
 // ============================================================
 // Prefijos de CP — listado general

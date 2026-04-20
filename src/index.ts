@@ -15,6 +15,9 @@ import {
   formatoDireccionPage,
   prefijosPage,
   prefijoDetallePage,
+  validarCPPage,
+  buscarPorUbicacionPage,
+  distanciaCPPage,
 } from './templates';
 import { slugify, SITE_URL } from './config';
 
@@ -45,7 +48,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v16',
+    cacheName: 'buscarcpmexico-v17',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -405,6 +408,101 @@ app.get('/api/buscar', async (c) => {
 });
 
 // ============================================================
+// API: VALIDAR CP
+// ============================================================
+app.get('/api/validar-cp', async (c) => {
+  const cp = (c.req.query('cp') || '').trim();
+  if (!/^\d{5}$/.test(cp)) return c.json({ valid: false });
+
+  const rows = await c.env.DB.prepare(
+    'SELECT DISTINCT colonia, tipo_asentamiento, municipio, estado, zona, clave_estado, clave_municipio FROM codigos_postales WHERE codigo_postal = ?'
+  ).bind(cp).all();
+
+  if (!rows.results || rows.results.length === 0) return c.json({ valid: false });
+
+  const first = rows.results[0] as any;
+  const estadoRow = await c.env.DB.prepare('SELECT slug FROM estados WHERE clave = ?').bind(first.clave_estado).first();
+  const municipioRow = await c.env.DB.prepare('SELECT slug FROM municipios WHERE clave_estado = ? AND clave_municipio = ?').bind(first.clave_estado, first.clave_municipio).first();
+
+  return c.json({
+    valid: true,
+    data: {
+      estado: first.estado,
+      municipio: first.municipio,
+      zona: first.zona || 'Urbano',
+      estadoSlug: estadoRow?.slug || '',
+      municipioSlug: municipioRow?.slug || '',
+      colonias: (rows.results as any[]).map(r => ({ nombre: r.colonia, slug: slugify(r.colonia) })),
+    },
+  });
+});
+
+// ============================================================
+// API: COORDENADAS → CP (búsqueda inversa)
+// ============================================================
+app.get('/api/coordenadas-cp', async (c) => {
+  const lat = parseFloat(c.req.query('lat') || '');
+  const lng = parseFloat(c.req.query('lng') || '');
+  if (isNaN(lat) || isNaN(lng) || lat < 14 || lat > 33 || lng < -118 || lng > -86) {
+    return c.json({ results: [] });
+  }
+
+  // Buscar los 5 CPs más cercanos usando aprox euclidiana (rápido en D1)
+  const rows = await c.env.DB.prepare(`
+    SELECT cc.codigo_postal, cc.latitud, cc.longitud,
+           cp.municipio, cp.estado
+    FROM cp_coordenadas cc
+    JOIN codigos_postales cp ON cp.codigo_postal = cc.codigo_postal
+    WHERE cc.latitud BETWEEN ? AND ? AND cc.longitud BETWEEN ? AND ?
+    GROUP BY cc.codigo_postal
+    ORDER BY ((cc.latitud - ?) * (cc.latitud - ?) + (cc.longitud - ?) * (cc.longitud - ?))
+    LIMIT 5
+  `).bind(lat - 0.2, lat + 0.2, lng - 0.2, lng + 0.2, lat, lat, lng, lng).all();
+
+  const results = (rows.results as any[]).map(r => {
+    const dLat = (r.latitud - lat) * Math.PI / 180;
+    const dLng = (r.longitud - lng) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat*Math.PI/180)*Math.cos(r.latitud*Math.PI/180)*Math.sin(dLng/2)**2;
+    const km = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return { codigo_postal: r.codigo_postal, distancia: km < 1 ? (km*1000).toFixed(0)+' m' : km.toFixed(1)+' km', municipio: r.municipio, estado: r.estado };
+  });
+
+  return c.json({ results });
+});
+
+// ============================================================
+// API: DISTANCIA ENTRE CPs
+// ============================================================
+app.get('/api/distancia', async (c) => {
+  const cp1 = (c.req.query('cp1') || '').trim();
+  const cp2 = (c.req.query('cp2') || '').trim();
+  if (!/^\d{5}$/.test(cp1) || !/^\d{5}$/.test(cp2)) {
+    return c.json({ error: 'Ingresa dos códigos postales válidos de 5 dígitos.' });
+  }
+
+  const [coord1, coord2] = await Promise.all([
+    c.env.DB.prepare('SELECT cc.latitud, cc.longitud, cp.municipio, cp.estado FROM cp_coordenadas cc JOIN codigos_postales cp ON cp.codigo_postal = cc.codigo_postal WHERE cc.codigo_postal = ? LIMIT 1').bind(cp1).first(),
+    c.env.DB.prepare('SELECT cc.latitud, cc.longitud, cp.municipio, cp.estado FROM cp_coordenadas cc JOIN codigos_postales cp ON cp.codigo_postal = cc.codigo_postal WHERE cc.codigo_postal = ? LIMIT 1').bind(cp2).first(),
+  ]);
+
+  if (!coord1) return c.json({ error: 'No se encontraron coordenadas para el CP ' + cp1 + '.' });
+  if (!coord2) return c.json({ error: 'No se encontraron coordenadas para el CP ' + cp2 + '.' });
+
+  const lat1 = (coord1 as any).latitud, lng1 = (coord1 as any).longitud;
+  const lat2 = (coord2 as any).latitud, lng2 = (coord2 as any).longitud;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  const km = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  return c.json({
+    distancia_km: km.toFixed(1),
+    origen: { municipio: (coord1 as any).municipio, estado: (coord1 as any).estado },
+    destino: { municipio: (coord2 as any).municipio, estado: (coord2 as any).estado },
+  });
+});
+
+// ============================================================
 // AVISO LEGAL
 // ============================================================
 app.get('/aviso-legal', (c) => {
@@ -437,6 +535,27 @@ app.get('/politica-de-privacidad', (c) => {
 // ============================================================
 app.get('/formato-direccion', (c) => {
   return c.html(formatoDireccionPage());
+});
+
+// ============================================================
+// VALIDAR CP
+// ============================================================
+app.get('/validar-cp', (c) => {
+  return c.html(validarCPPage());
+});
+
+// ============================================================
+// BUSCAR POR UBICACIÓN
+// ============================================================
+app.get('/buscar-por-ubicacion', (c) => {
+  return c.html(buscarPorUbicacionPage());
+});
+
+// ============================================================
+// DISTANCIA ENTRE CPs
+// ============================================================
+app.get('/distancia', (c) => {
+  return c.html(distanciaCPPage());
 });
 
 // ============================================================
@@ -560,6 +679,9 @@ app.get('/sitemaps/pages.xml', async (c) => {
     `  <url><loc>${SITE_URL}/aviso-legal</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>`,
     `  <url><loc>${SITE_URL}/formato-direccion</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`,
     `  <url><loc>${SITE_URL}/codigos-postales</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`,
+    `  <url><loc>${SITE_URL}/validar-cp</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`,
+    `  <url><loc>${SITE_URL}/buscar-por-ubicacion</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`,
+    `  <url><loc>${SITE_URL}/distancia</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`,
     ...estados.results.map(
       (e: any) =>
         `  <url><loc>${SITE_URL}/estado/${e.slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`
