@@ -18,8 +18,9 @@ import {
   validarCPPage,
   buscarPorUbicacionPage,
   distanciaCPPage,
+  zonaHorariaPage,
 } from './templates';
-import { slugify, SITE_URL } from './config';
+import { slugify, SITE_URL, getZonaHoraria } from './config';
 
 type Bindings = {
   DB: D1Database;
@@ -48,7 +49,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v20',
+    cacheName: 'buscarcpmexico-v21',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -503,6 +504,39 @@ app.get('/api/distancia', async (c) => {
 });
 
 // ============================================================
+// API: ZONA HORARIA POR CP
+// ============================================================
+app.get('/api/zona-horaria', async (c) => {
+  const cp = (c.req.query('cp') || '').trim();
+  if (!/^\d{5}$/.test(cp)) return c.json({ error: 'Ingresa un código postal válido de 5 dígitos.' });
+
+  const row = await c.env.DB.prepare(
+    'SELECT DISTINCT estado, municipio, clave_estado FROM codigos_postales WHERE codigo_postal = ? LIMIT 1'
+  ).bind(cp).first();
+
+  if (!row) return c.json({ error: 'CP ' + cp + ' no encontrado en la base de datos.' });
+
+  const zh = getZonaHoraria((row as any).clave_estado);
+
+  // Calcular hora actual en esa zona
+  const now = new Date();
+  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  const localDate = new Date(utcMs + zh.utcOffset * 3600000);
+  const horas = localDate.getHours().toString().padStart(2, '0');
+  const minutos = localDate.getMinutes().toString().padStart(2, '0');
+
+  return c.json({
+    codigo_postal: cp,
+    estado: (row as any).estado,
+    municipio: (row as any).municipio,
+    zona_horaria: zh.nombre,
+    utc: zh.utc,
+    abreviatura: zh.abreviatura,
+    hora_actual: `${horas}:${minutos}`,
+  });
+});
+
+// ============================================================
 // AVISO LEGAL
 // ============================================================
 app.get('/aviso-legal', (c) => {
@@ -556,6 +590,13 @@ app.get('/buscar-por-ubicacion', (c) => {
 // ============================================================
 app.get('/distancia', (c) => {
   return c.html(distanciaCPPage());
+});
+
+// ============================================================
+// ZONA HORARIA POR CP
+// ============================================================
+app.get('/zona-horaria', (c) => {
+  return c.html(zonaHorariaPage());
 });
 
 // ============================================================
@@ -682,6 +723,7 @@ app.get('/sitemaps/pages.xml', async (c) => {
     `  <url><loc>${SITE_URL}/validar-cp</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`,
     `  <url><loc>${SITE_URL}/buscar-por-ubicacion</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`,
     `  <url><loc>${SITE_URL}/distancia</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`,
+    `  <url><loc>${SITE_URL}/zona-horaria</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`,
     ...estados.results.map(
       (e: any) =>
         `  <url><loc>${SITE_URL}/estado/${e.slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`
