@@ -993,18 +993,58 @@ export function avisoLegalPage(): string {
 // Validador de CP
 // ============================================================
 export function validarCPPage(): string {
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: '¿Cómo saber si un código postal es válido en México?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Puedes verificar si un código postal mexicano es válido ingresando los 5 dígitos en nuestro validador. La herramienta consulta la base de datos oficial de SEPOMEX y te indica si el CP existe, a qué estado y municipio pertenece, y las colonias que incluye.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Cuántos dígitos tiene un código postal en México?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Todos los códigos postales de México tienen exactamente 5 dígitos numéricos. Los primeros dos dígitos indican el estado o región, y los tres restantes identifican la zona específica dentro del municipio.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Qué pasa si un código postal no es válido?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Si un código postal no aparece en la base de datos de SEPOMEX, significa que no está asignado a ninguna zona de entrega. Verifica que los 5 dígitos sean correctos. También es posible que el CP haya sido eliminado o reasignado en una actualización reciente.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Los códigos postales de México cambian?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Sí, SEPOMEX actualiza periódicamente su catálogo de códigos postales. Se pueden crear nuevos códigos para colonias nuevas o modificar los existentes. Por eso es importante validar los CPs con una base de datos actualizada.',
+        },
+      },
+    ],
+  };
+
   return layout({
-    title: 'Validar Código Postal de México - Verificar si un CP Existe',
-    description: 'Verifica si un código postal mexicano es válido. Ingresa los 5 dígitos y consulta a qué municipio, estado y colonias pertenece.',
+    title: 'Validar Código Postal de México - Verificar si un CP Existe | 2026',
+    description: 'Verifica si un código postal mexicano es válido. Ingresa los 5 dígitos y consulta a qué municipio, estado y colonias pertenece. Base de datos SEPOMEX actualizada 2026.',
     canonical: '/validar-cp',
     breadcrumbs: [
       { name: 'Inicio', url: '/' },
       { name: 'Validar CP', url: '/validar-cp' },
     ],
+    structuredData,
     body: `
       <div class="card">
         <h2>Validar Código Postal</h2>
-        <p>Ingresa un código postal de 5 dígitos para verificar si existe en la base de datos de SEPOMEX y consultar su información.</p>
+        <p>Ingresa un código postal de 5 dígitos para verificar si existe en la base de datos de SEPOMEX y consultar su información completa: estado, municipio, colonias y zona.</p>
         <div style="display:flex;gap:8px;margin-top:16px">
           <input type="text" class="search-box" id="cp-input" placeholder="Ej. 06600" maxlength="5" pattern="\\d{5}" inputmode="numeric" style="margin-bottom:0;flex:1">
           <button id="cp-btn" style="padding:12px 24px;background:#006847;color:#fff;border:none;border-radius:24px;font-size:1rem;cursor:pointer;font-weight:600;white-space:nowrap">Validar</button>
@@ -1014,12 +1054,59 @@ export function validarCPPage(): string {
       ${adSlot('validar-top')}
       <div class="card">
         <h3>¿Para qué validar un código postal?</h3>
+        <p>La validación de códigos postales es esencial en múltiples situaciones cotidianas y profesionales:</p>
         <ul style="padding-left:20px;line-height:2">
-          <li>Verificar que un CP existe antes de enviar un paquete o carta.</li>
-          <li>Confirmar que el CP corresponde al municipio y estado correctos.</li>
-          <li>Validar datos de formularios de registro o e-commerce.</li>
-          <li>Comprobar la zona (urbana/rural) de un código postal.</li>
+          <li><strong>Envíos y paquetería:</strong> verificar que un CP existe antes de enviar un paquete o carta por SEPOMEX, DHL, FedEx o Estafeta.</li>
+          <li><strong>E-commerce:</strong> validar la dirección de entrega en tiendas en línea para evitar devoluciones y retrasos.</li>
+          <li><strong>Formularios web:</strong> confirmar que los datos de registro de usuarios son correctos en tiempo real.</li>
+          <li><strong>Facturación (CFDI):</strong> el SAT requiere el código postal correcto en los comprobantes fiscales digitales.</li>
+          <li><strong>Trámites bancarios:</strong> los bancos solicitan el CP para verificar la dirección del titular de la cuenta.</li>
+          <li><strong>Zona de cobertura:</strong> comprobar si un CP está en zona urbana, rural o semiurbana.</li>
         </ul>
+      </div>
+      <div class="card">
+        <h3>¿Cómo funciona el validador de códigos postales?</h3>
+        <p>Nuestra herramienta consulta una base de datos actualizada con la información oficial de SEPOMEX (Servicio Postal Mexicano). Al ingresar un código postal de 5 dígitos, el sistema verifica:</p>
+        <ul style="padding-left:20px;line-height:2">
+          <li>Si el código postal está registrado en el catálogo oficial.</li>
+          <li>El estado y municipio al que pertenece.</li>
+          <li>Todas las colonias incluidas en ese CP.</li>
+          <li>La zona geográfica (urbana, rural o semiurbana).</li>
+        </ul>
+        <p style="margin-top:12px">La consulta es instantánea y gratuita. No se almacenan los códigos postales que consultas.</p>
+      </div>
+      ${adSlot('validar-middle')}
+      <div class="card">
+        <h3>Estructura de los códigos postales mexicanos</h3>
+        <p>Los códigos postales de México siguen un sistema numérico de 5 dígitos con la siguiente estructura:</p>
+        <table>
+          <thead><tr><th>Dígitos</th><th>Significado</th><th>Ejemplo (CP 06600)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1-2</strong></td><td>Estado o región geográfica</td><td>06 → Ciudad de México</td></tr>
+            <tr><td><strong>3</strong></td><td>Zona dentro del estado</td><td>6 → Zona centro</td></tr>
+            <tr><td><strong>4-5</strong></td><td>Área de entrega específica</td><td>00 → Colonia Juárez, Roma Norte, etc.</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:12px">Puedes explorar los códigos postales organizados por sus primeros dígitos en nuestra sección de <a href="/codigos-postales">CP por prefijo</a>.</p>
+      </div>
+      <div class="card">
+        <h3>Preguntas frecuentes sobre códigos postales</h3>
+        <h4 style="margin-top:12px">¿Cuántos dígitos tiene un código postal en México?</h4>
+        <p>Todos los códigos postales mexicanos tienen exactamente 5 dígitos numéricos, asignados por SEPOMEX. Los primeros dos dígitos corresponden al estado o región.</p>
+        <h4 style="margin-top:12px">¿Los códigos postales cambian con el tiempo?</h4>
+        <p>Sí, SEPOMEX actualiza su catálogo periódicamente. Se crean nuevos códigos postales para colonias nuevas y se pueden modificar o eliminar los existentes. Nuestra base de datos se mantiene actualizada.</p>
+        <h4 style="margin-top:12px">¿Un código postal puede tener varias colonias?</h4>
+        <p>Sí, es muy común. Un solo código postal puede abarcar múltiples colonias dentro del mismo municipio. Por ejemplo, el CP 06600 en Ciudad de México incluye colonias como Juárez, Roma Norte y Condesa.</p>
+        <h4 style="margin-top:12px">¿Qué hago si no encuentro mi código postal?</h4>
+        <p>Si el validador indica que el CP no existe, verifica los 5 dígitos. También puedes <a href="/">buscar por nombre de colonia</a> o <a href="/buscar-por-ubicacion">buscar por ubicación GPS</a> para encontrar el CP correcto.</p>
+      </div>
+      <div class="card">
+        <h3>Otras herramientas útiles</h3>
+        <div class="tools-grid">
+          <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra el CP más cercano a tu GPS</small></a>
+          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km en línea recta</small></a>
+          <a href="/formato-direccion"><strong>Formato Dirección</strong><br><small>Guía para escribir direcciones</small></a>
+        </div>
       </div>
       ${adSlot('validar-bottom')}
       <script>
@@ -1065,18 +1152,58 @@ export function validarCPPage(): string {
 // Búsqueda inversa coordenadas → CP
 // ============================================================
 export function buscarPorUbicacionPage(): string {
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: '¿Cómo saber el código postal de mi ubicación actual?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Puedes usar nuestra herramienta de búsqueda por ubicación GPS. Presiona "Usar mi ubicación actual" para que tu navegador comparta tus coordenadas, y el sistema te mostrará los 5 códigos postales más cercanos con su distancia aproximada.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Qué tan precisa es la búsqueda de CP por coordenadas?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'La búsqueda utiliza el centroide (punto central) de cada código postal. La precisión es de unos cientos de metros en zonas urbanas. En zonas rurales con CPs más extensos, la precisión puede variar más. Mostramos los 5 CPs más cercanos para que puedas elegir el correcto.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Puedo buscar un código postal con coordenadas de Google Maps?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Sí. Copia la latitud y longitud desde Google Maps (haz clic derecho en un punto del mapa) y pégalas en los campos de coordenadas manuales. El formato debe ser decimal, por ejemplo: latitud 19.4326, longitud -99.1332.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Qué rango de coordenadas cubre México?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'México se encuentra entre las latitudes 14° y 33° Norte, y las longitudes -118° y -86° Oeste. Nuestra herramienta valida que las coordenadas estén dentro de este rango para asegurar resultados correctos.',
+        },
+      },
+    ],
+  };
+
   return layout({
-    title: 'Buscar Código Postal por Ubicación - Coordenadas GPS a CP',
-    description: 'Encuentra el código postal más cercano a tu ubicación GPS. Usa tu ubicación actual o ingresa coordenadas para obtener el CP correspondiente.',
+    title: 'Buscar Código Postal por Ubicación GPS - Coordenadas a CP México 2026',
+    description: 'Encuentra el código postal más cercano a tu ubicación GPS en México. Usa tu ubicación actual o ingresa coordenadas para obtener el CP correspondiente. Gratis y sin registro.',
     canonical: '/buscar-por-ubicacion',
     breadcrumbs: [
       { name: 'Inicio', url: '/' },
       { name: 'Buscar por Ubicación', url: '/buscar-por-ubicacion' },
     ],
+    structuredData,
     body: `
       <div class="card">
         <h2>Buscar CP por Ubicación</h2>
-        <p>Encuentra el código postal más cercano a unas coordenadas GPS o usa tu ubicación actual.</p>
+        <p>Encuentra el código postal más cercano a unas coordenadas GPS o usa tu ubicación actual. Mostramos los 5 códigos postales más cercanos con su distancia aproximada.</p>
         <div style="margin-top:16px">
           <button id="geo-btn" style="padding:12px 24px;background:#006847;color:#fff;border:none;border-radius:24px;font-size:1rem;cursor:pointer;font-weight:600;width:100%">📍 Usar mi ubicación actual</button>
         </div>
@@ -1090,8 +1217,53 @@ export function buscarPorUbicacionPage(): string {
       </div>
       ${adSlot('ubicacion-top')}
       <div class="card">
-        <h3>¿Cómo funciona?</h3>
-        <p>Buscamos en nuestra base de datos de coordenadas el código postal cuyo centro geográfico esté más cerca del punto que indiques. La precisión es aproximada (centroide del CP).</p>
+        <h3>¿Cómo funciona la búsqueda por ubicación?</h3>
+        <p>Nuestra herramienta de geolocalización inversa encuentra el código postal más cercano a cualquier punto en México. El proceso es sencillo:</p>
+        <ol style="padding-left:20px;line-height:2">
+          <li><strong>Obtener coordenadas:</strong> usa el botón de ubicación automática o ingresa latitud y longitud manualmente.</li>
+          <li><strong>Búsqueda por proximidad:</strong> el sistema calcula la distancia a todos los códigos postales cercanos usando la fórmula de Haversine.</li>
+          <li><strong>Resultados ordenados:</strong> se muestran los 5 CPs más cercanos con la distancia en kilómetros, municipio y estado.</li>
+        </ol>
+        <p style="margin-top:12px">La precisión depende del tamaño del código postal. En zonas urbanas densas los CPs son más pequeños y la precisión es mayor. En zonas rurales los CPs cubren áreas más amplias.</p>
+      </div>
+      <div class="card">
+        <h3>¿Cuándo necesitas buscar un CP por ubicación?</h3>
+        <ul style="padding-left:20px;line-height:2">
+          <li><strong>Estás en un lugar desconocido</strong> y necesitas saber el código postal para un envío o trámite.</li>
+          <li><strong>Trabajas con coordenadas GPS</strong> (flotillas, logística, campo) y necesitas convertirlas a código postal.</li>
+          <li><strong>Desarrollo de apps:</strong> necesitas asignar un CP a la ubicación del usuario para cálculo de envíos.</li>
+          <li><strong>Compras en línea:</strong> no sabes el CP de tu ubicación actual para completar un formulario.</li>
+          <li><strong>Mudanza reciente:</strong> aún no conoces el código postal de tu nueva dirección.</li>
+        </ul>
+      </div>
+      ${adSlot('ubicacion-middle')}
+      <div class="card">
+        <h3>¿Cómo obtener coordenadas desde Google Maps?</h3>
+        <p>Si quieres buscar el código postal de un lugar específico usando Google Maps:</p>
+        <ol style="padding-left:20px;line-height:2">
+          <li>Abre <strong>Google Maps</strong> en tu computadora o celular.</li>
+          <li>Haz <strong>clic derecho</strong> (o mantén presionado en móvil) sobre el punto que te interesa.</li>
+          <li>Se mostrarán las <strong>coordenadas</strong> (latitud, longitud) en formato decimal.</li>
+          <li>Copia ambos valores y pégalos en los campos de arriba.</li>
+        </ol>
+        <p style="margin-top:12px">Las coordenadas de México van de latitud 14° a 33° y longitud -118° a -86°.</p>
+      </div>
+      <div class="card">
+        <h3>Preguntas frecuentes</h3>
+        <h4 style="margin-top:12px">¿Necesito activar el GPS de mi celular?</h4>
+        <p>Sí, para usar la función "Usar mi ubicación actual" necesitas permitir que el navegador acceda a tu ubicación. En computadora, la ubicación se estima por tu conexión a internet y puede ser menos precisa.</p>
+        <h4 style="margin-top:12px">¿Puedo buscar códigos postales fuera de México?</h4>
+        <p>No, esta herramienta solo cubre códigos postales de México (SEPOMEX). Las coordenadas deben estar dentro del territorio mexicano.</p>
+        <h4 style="margin-top:12px">¿El resultado es exacto?</h4>
+        <p>El resultado es una aproximación basada en el centroide (punto central) de cada código postal. Te recomendamos verificar el CP correcto revisando la colonia en la <a href="/">página de búsqueda principal</a>.</p>
+      </div>
+      <div class="card">
+        <h3>Otras herramientas útiles</h3>
+        <div class="tools-grid">
+          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un CP existe</small></a>
+          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km en línea recta</small></a>
+          <a href="/formato-direccion"><strong>Formato Dirección</strong><br><small>Guía para escribir direcciones</small></a>
+        </div>
       </div>
       ${adSlot('ubicacion-bottom')}
       <script>
@@ -1146,18 +1318,58 @@ export function buscarPorUbicacionPage(): string {
 // Calculadora de distancia entre CPs
 // ============================================================
 export function distanciaCPPage(): string {
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: '¿Cómo calcular la distancia entre dos códigos postales en México?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Ingresa los dos códigos postales de 5 dígitos en nuestra calculadora y presiona "Calcular". El sistema obtiene las coordenadas de cada CP y calcula la distancia en línea recta usando la fórmula de Haversine. El resultado se muestra en kilómetros.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿La distancia mostrada es por carretera?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'No, la distancia calculada es en línea recta (geodésica) entre los centroides de ambos códigos postales. La distancia real por carretera generalmente es mayor, ya que las carreteras no van en línea recta. Como referencia, la distancia por carretera suele ser entre 1.2 y 1.5 veces la distancia en línea recta.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Para qué sirve calcular la distancia entre códigos postales?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Es útil para estimar costos de envío por paquetería, calcular zonas de cobertura de servicios de entrega, comparar distancias entre sucursales, planificar rutas de distribución y determinar si un destino cae dentro de un radio de servicio.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Qué fórmula se usa para calcular la distancia?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Se utiliza la fórmula de Haversine, que calcula la distancia más corta entre dos puntos sobre la superficie de una esfera (la Tierra). Esta fórmula toma en cuenta la curvatura terrestre y proporciona una distancia geodésica precisa.',
+        },
+      },
+    ],
+  };
+
   return layout({
-    title: 'Calcular Distancia entre Códigos Postales de México',
-    description: 'Calcula la distancia en kilómetros entre dos códigos postales de México en línea recta. Herramienta gratuita para estimar distancias de envío.',
+    title: 'Calcular Distancia entre Códigos Postales de México - km en Línea Recta 2026',
+    description: 'Calcula la distancia en kilómetros entre dos códigos postales de México en línea recta. Herramienta gratuita para estimar distancias de envío con fórmula de Haversine.',
     canonical: '/distancia',
     breadcrumbs: [
       { name: 'Inicio', url: '/' },
       { name: 'Distancia entre CPs', url: '/distancia' },
     ],
+    structuredData,
     body: `
       <div class="card">
         <h2>Calcular Distancia entre Códigos Postales</h2>
-        <p>Ingresa dos códigos postales para calcular la distancia aproximada en línea recta entre ellos.</p>
+        <p>Ingresa dos códigos postales de 5 dígitos para calcular la distancia aproximada en línea recta entre ellos. El resultado incluye la ubicación de cada CP.</p>
         <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
           <input type="text" class="search-box" id="cp1" placeholder="CP origen (ej. 06600)" maxlength="5" inputmode="numeric" style="margin-bottom:0;flex:1;min-width:140px">
           <input type="text" class="search-box" id="cp2" placeholder="CP destino (ej. 44100)" maxlength="5" inputmode="numeric" style="margin-bottom:0;flex:1;min-width:140px">
@@ -1167,16 +1379,53 @@ export function distanciaCPPage(): string {
       </div>
       ${adSlot('distancia-top')}
       <div class="card">
-        <h3>¿Cómo se calcula?</h3>
-        <p>Usamos la fórmula de <strong>Haversine</strong> para calcular la distancia en línea recta (geodésica) entre los centroides de cada código postal. La distancia real por carretera puede ser mayor.</p>
+        <h3>¿Cómo se calcula la distancia?</h3>
+        <p>Utilizamos la <strong>fórmula de Haversine</strong> para calcular la distancia geodésica (en línea recta sobre la superficie terrestre) entre los centroides de cada código postal.</p>
+        <p style="margin-top:8px">Esta fórmula considera la curvatura de la Tierra para dar un resultado preciso. La distancia real por carretera generalmente es entre <strong>1.2x y 1.5x mayor</strong> que la distancia en línea recta, dependiendo de la geografía y las vías disponibles.</p>
       </div>
       <div class="card">
-        <h3>Usos comunes</h3>
+        <h3>Usos comunes de la calculadora de distancias</h3>
         <ul style="padding-left:20px;line-height:2">
-          <li>Estimar costos de envío por paquetería.</li>
-          <li>Comparar distancias entre sucursales o puntos de venta.</li>
-          <li>Calcular zonas de cobertura para servicios de entrega.</li>
+          <li><strong>Envíos y paquetería:</strong> estimar el costo de envío según la distancia entre origen y destino (DHL, FedEx, Estafeta, Correos de México).</li>
+          <li><strong>Logística y distribución:</strong> planificar rutas de entrega y comparar distancias entre almacenes y puntos de venta.</li>
+          <li><strong>Zonas de cobertura:</strong> determinar si un cliente está dentro del radio de servicio de una tienda o restaurante.</li>
+          <li><strong>Mudanzas:</strong> calcular la distancia aproximada de una mudanza entre dos ciudades o zonas.</li>
+          <li><strong>Seguros y finanzas:</strong> algunas aseguradoras y instituciones financieras usan la distancia entre CPs para cálculos de riesgo o cobertura.</li>
         </ul>
+      </div>
+      ${adSlot('distancia-middle')}
+      <div class="card">
+        <h3>Distancias de referencia en México</h3>
+        <p>Algunas distancias en línea recta entre ciudades importantes de México para que tengas un punto de comparación:</p>
+        <table>
+          <thead><tr><th>Ruta</th><th>CPs ejemplo</th><th>Distancia aprox.</th></tr></thead>
+          <tbody>
+            <tr><td>CDMX → Guadalajara</td><td>06600 → 44100</td><td>~460 km</td></tr>
+            <tr><td>CDMX → Monterrey</td><td>06600 → 64000</td><td>~740 km</td></tr>
+            <tr><td>Guadalajara → Monterrey</td><td>44100 → 64000</td><td>~680 km</td></tr>
+            <tr><td>CDMX → Cancún</td><td>06600 → 77500</td><td>~1,300 km</td></tr>
+            <tr><td>Tijuana → Mérida</td><td>22000 → 97000</td><td>~3,000 km</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Preguntas frecuentes</h3>
+        <h4 style="margin-top:12px">¿La distancia es por carretera?</h4>
+        <p>No, es la distancia en línea recta (geodésica). La distancia por carretera suele ser mayor. Para distancias por carretera, consulta Google Maps o Waze.</p>
+        <h4 style="margin-top:12px">¿Qué pasa si un CP no tiene coordenadas?</h4>
+        <p>Algunos códigos postales muy nuevos o especiales (como los de oficinas de correos) pueden no tener coordenadas en nuestra base de datos. En ese caso, el sistema mostrará un mensaje de error.</p>
+        <h4 style="margin-top:12px">¿Puedo calcular distancias con CPs de otros países?</h4>
+        <p>No, esta herramienta solo funciona con códigos postales de México (5 dígitos, asignados por SEPOMEX).</p>
+        <h4 style="margin-top:12px">¿Qué tan precisa es la medición?</h4>
+        <p>La precisión depende de la ubicación del centroide de cada CP. En zonas urbanas con CPs pequeños, la precisión es de cientos de metros. En zonas rurales con CPs más extensos, puede variar algunos kilómetros.</p>
+      </div>
+      <div class="card">
+        <h3>Otras herramientas útiles</h3>
+        <div class="tools-grid">
+          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un CP existe</small></a>
+          <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra el CP más cercano</small></a>
+          <a href="/formato-direccion"><strong>Formato Dirección</strong><br><small>Guía para escribir direcciones</small></a>
+        </div>
       </div>
       ${adSlot('distancia-bottom')}
       <script>
