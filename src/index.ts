@@ -13,6 +13,8 @@ import {
   acercaDePage,
   politicaPrivacidadPage,
   formatoDireccionPage,
+  prefijosPage,
+  prefijoDetallePage,
 } from './templates';
 import { slugify, SITE_URL } from './config';
 
@@ -43,7 +45,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v15',
+    cacheName: 'buscarcpmexico-v16',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -438,6 +440,62 @@ app.get('/formato-direccion', (c) => {
 });
 
 // ============================================================
+// PREFIJOS DE CP — listado general
+// ============================================================
+app.get('/codigos-postales', async (c) => {
+  const rows = await c.env.DB.prepare(`
+    SELECT SUBSTR(codigo_postal, 1, 2) as prefijo,
+           COUNT(DISTINCT codigo_postal) as count,
+           GROUP_CONCAT(DISTINCT estado) as estados
+    FROM codigos_postales
+    GROUP BY prefijo
+    ORDER BY prefijo
+  `).all();
+
+  const prefijos = (rows.results as any[]).map(r => ({
+    prefijo: r.prefijo,
+    count: r.count,
+    estados: (r.estados as string).split(',').slice(0, 3).join(', ') + ((r.estados as string).split(',').length > 3 ? '…' : ''),
+  }));
+
+  return c.html(prefijosPage(prefijos));
+});
+
+// ============================================================
+// PREFIJO DETALLE — CPs de un prefijo
+// ============================================================
+app.get('/codigos-postales/:prefijo', async (c) => {
+  const prefijo = c.req.param('prefijo');
+
+  // Validar que sea exactamente 2 dígitos
+  if (!/^\d{2}$/.test(prefijo)) return c.notFound();
+
+  const rows = await c.env.DB.prepare(`
+    SELECT codigo_postal,
+           COUNT(DISTINCT colonia) as colonias,
+           MIN(municipio) as municipio,
+           MIN(estado) as estado
+    FROM codigos_postales
+    WHERE codigo_postal LIKE ? || '%'
+    GROUP BY codigo_postal
+    ORDER BY codigo_postal
+  `).bind(prefijo).all();
+
+  if (!rows.results || rows.results.length === 0) return c.notFound();
+
+  const codigos = (rows.results as any[]).map(r => ({
+    codigo_postal: r.codigo_postal,
+    colonias: r.colonias,
+    municipio: r.municipio,
+    estado: r.estado,
+  }));
+
+  const estadosDelPrefijo = [...new Set(codigos.map(c => c.estado))];
+
+  return c.html(prefijoDetallePage(prefijo, codigos, estadosDelPrefijo));
+});
+
+// ============================================================
 // ADS.TXT (AdSense)
 // ============================================================
 app.get('/ads.txt', (c) => {
@@ -501,6 +559,7 @@ app.get('/sitemaps/pages.xml', async (c) => {
     `  <url><loc>${SITE_URL}/politica-de-privacidad</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>`,
     `  <url><loc>${SITE_URL}/aviso-legal</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>`,
     `  <url><loc>${SITE_URL}/formato-direccion</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`,
+    `  <url><loc>${SITE_URL}/codigos-postales</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`,
     ...estados.results.map(
       (e: any) =>
         `  <url><loc>${SITE_URL}/estado/${e.slug}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`
