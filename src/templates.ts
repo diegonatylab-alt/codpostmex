@@ -162,6 +162,7 @@ function layout(opts: {
       <p>&copy; ${new Date().getFullYear()} Buscar CP México — Consulta de códigos postales en línea</p>
       <p style="margin-top:8px">
           <a href="/estados">Estados</a> |
+          <a href="/codigos-postales">CP por Prefijo</a> |
           <a href="/contacto">Contacto</a> |
           <a href="/acerca-de">Acerca de</a> |
           <a href="/politica-de-privacidad">Política de Privacidad</a> |
@@ -246,6 +247,11 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
         <h3>📮 ¿Cómo escribir correctamente una dirección postal?</h3>
         <p>Conoce el formato oficial de SEPOMEX, el orden correcto de los campos y ejemplos reales para que tus envíos lleguen sin problemas.</p>
         <p style="margin-top:12px"><a href="/formato-direccion" style="display:inline-block;padding:10px 20px;background:#006847;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Ver guía de formato de dirección →</a></p>
+      </div>
+      <div class="card">
+        <h3>🔢 Navegar códigos postales por prefijo</h3>
+        <p>Los primeros 2 dígitos del CP indican la región. Explora todos los rangos de códigos postales de México.</p>
+        <p style="margin-top:12px"><a href="/codigos-postales" style="display:inline-block;padding:10px 20px;background:#006847;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Ver prefijos de CP →</a></p>
       </div>
       <script>
         const searchInput = document.getElementById('search');
@@ -952,6 +958,94 @@ export function avisoLegalPage(): string {
         </div>`,
     });
   }
+
+// ============================================================
+// Prefijos de CP — listado general
+// ============================================================
+export function prefijosPage(
+  prefijos: { prefijo: string; count: number; estados: string }[]
+): string {
+  const grid = prefijos
+    .map(
+      p =>
+        `<a href="/codigos-postales/${p.prefijo}"><strong>${p.prefijo}xxx</strong><br><small>${p.count.toLocaleString('es-MX')} CPs · ${escapeHtml(p.estados)}</small></a>`
+    )
+    .join('');
+
+  return layout({
+    title: 'Códigos Postales de México por Prefijo - Navegar por Rango de CP',
+    description: 'Explora todos los códigos postales de México organizados por prefijo (primeros 2 dígitos). Encuentra rápidamente el rango de CP de tu zona.',
+    canonical: '/codigos-postales',
+    breadcrumbs: [
+      { name: 'Inicio', url: '/' },
+      { name: 'Códigos Postales por Prefijo', url: '/codigos-postales' },
+    ],
+    body: `
+      <div class="card">
+        <h2>Códigos Postales por Prefijo</h2>
+        <p>Los códigos postales de México tienen 5 dígitos. Los primeros dos dígitos indican la región o estado al que pertenece el código. Selecciona un prefijo para ver todos los códigos postales de ese rango.</p>
+      </div>
+      ${adSlot('prefijos-top')}
+      <div class="card">
+        <h2>Todos los Prefijos</h2>
+        <div class="grid">${grid}</div>
+      </div>
+      ${adSlot('prefijos-bottom')}`,
+  });
+}
+
+// ============================================================
+// Prefijo detalle — CPs de un prefijo
+// ============================================================
+export function prefijoDetallePage(
+  prefijo: string,
+  codigos: { codigo_postal: string; colonias: number; municipio: string; estado: string }[],
+  estadosDelPrefijo: string[]
+): string {
+  const rows = codigos
+    .map(
+      c =>
+        `<tr>
+          <td><a href="/codigo-postal/${c.codigo_postal}">${c.codigo_postal}</a></td>
+          <td>${c.colonias}</td>
+          <td>${escapeHtml(c.municipio)}</td>
+          <td>${escapeHtml(c.estado)}</td>
+        </tr>`
+    )
+    .join('');
+
+  const estadosText = estadosDelPrefijo.join(', ');
+  const rangeStart = `${prefijo}000`;
+  const rangeEnd = `${prefijo}999`;
+
+  return layout({
+    title: `Códigos Postales ${rangeStart}-${rangeEnd} | Prefijo ${prefijo} - ${estadosText}`,
+    description: `${codigos.length} códigos postales con prefijo ${prefijo} (${rangeStart} a ${rangeEnd}). Pertenecen a: ${estadosText}. Consulta colonias, municipios y ubicación.`,
+    canonical: `/codigos-postales/${prefijo}`,
+    breadcrumbs: [
+      { name: 'Inicio', url: '/' },
+      { name: 'Prefijos', url: '/codigos-postales' },
+      { name: `Prefijo ${prefijo}`, url: `/codigos-postales/${prefijo}` },
+    ],
+    body: `
+      <div class="card">
+        <h2>Códigos Postales con Prefijo ${prefijo}</h2>
+        <p>Se encontraron <strong>${codigos.length.toLocaleString('es-MX')}</strong> códigos postales en el rango <strong>${rangeStart}</strong> a <strong>${rangeEnd}</strong>, pertenecientes a: <strong>${escapeHtml(estadosText)}</strong>.</p>
+      </div>
+      ${adSlot('prefijo-top')}
+      <div class="card">
+        <table>
+          <thead><tr><th>Código Postal</th><th>Colonias</th><th>Municipio</th><th>Estado</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      ${adSlot('prefijo-bottom')}
+      <div class="card">
+        <h3>¿Qué significan los primeros dígitos de un código postal?</h3>
+        <p>En México, los primeros dos dígitos del código postal indican la región geográfica. Los códigos que empiezan con <strong>${prefijo}</strong> corresponden a ${escapeHtml(estadosText)}. Los dígitos siguientes identifican el municipio y la colonia específica.</p>
+      </div>`,
+  });
+}
 
 // ============================================================
 // Formato de Dirección Postal
