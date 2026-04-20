@@ -48,7 +48,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v18',
+    cacheName: 'buscarcpmexico-v19',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
