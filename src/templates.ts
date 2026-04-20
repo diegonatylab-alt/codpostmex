@@ -100,10 +100,10 @@ function layout(opts: {
     .result-box--err{background:#fce4ec;border:1px solid #ef9a9a}
     .result-box--err h3{color:#c62828}
     .result-big{font-size:2rem;font-weight:700;color:#2e7d32}
-    .tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     .tools-grid a{display:block;padding:16px;background:#fff;border:1px solid #e8eaed;border-radius:8px;text-decoration:none;color:#202124;transition:box-shadow .2s}
     .tools-grid a:hover{box-shadow:0 2px 8px rgba(0,0,0,.12);border-color:#006847}
-    @media(max-width:700px){.tools-grid{grid-template-columns:1fr}}
+    @media(max-width:500px){.tools-grid{grid-template-columns:1fr}}
     @media(max-width:600px){
       .info-grid{grid-template-columns:1fr}
       .grid{grid-template-columns:1fr 1fr}
@@ -189,6 +189,7 @@ function layout(opts: {
           <a href="/acerca-de">Acerca de</a> |
           <a href="/politica-de-privacidad">Política de Privacidad</a> |
           <a href="/formato-direccion">Formato Dirección</a> |
+          <a href="/zona-horaria">Zona Horaria</a> |
           <a href="/aviso-legal">Aviso Legal</a> |
         <a href="/sitemap-index.xml">Sitemap</a>
       </p>
@@ -281,6 +282,7 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
           <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un CP existe</small></a>
           <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra el CP más cercano</small></a>
           <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km entre dos CPs</small></a>
+          <a href="/zona-horaria"><strong>Zona Horaria</strong><br><small>Consulta la hora por CP</small></a>
         </div>
       </div>
       <script>
@@ -1461,6 +1463,169 @@ export function distanciaCPPage(): string {
   }
   btn.addEventListener('click', calc);
   cp2.addEventListener('keydown', function(e){ if(e.key==='Enter') calc(); });
+})();
+      </script>`,
+  });
+}
+
+// ============================================================
+// Zona Horaria por CP
+// ============================================================
+export function zonaHorariaPage(): string {
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: '¿Cuántas zonas horarias tiene México?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'México tiene 4 zonas horarias: Tiempo del Sureste (UTC-5) para Quintana Roo, Tiempo del Centro (UTC-6) para la mayoría del país, Tiempo del Pacífico (UTC-7) para Baja California Sur, Chihuahua, Nayarit, Sinaloa y Sonora, y Tiempo del Noroeste (UTC-8) para Baja California.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿México tiene horario de verano?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Desde octubre de 2022, México eliminó el horario de verano (cambio de hora estacional) para la mayor parte del país. Solo los municipios de la franja fronteriza norte con Estados Unidos siguen observando el cambio de horario de verano para mantener sincronización con las ciudades estadounidenses vecinas.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Cómo saber la zona horaria de un código postal?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'La zona horaria de un código postal se determina por el estado al que pertenece. Ingresa el CP de 5 dígitos en nuestra herramienta y te mostraremos la zona horaria, la diferencia con UTC y la hora actual en esa zona.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Qué zona horaria usa la Ciudad de México?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'La Ciudad de México usa el Tiempo del Centro (UTC-6), al igual que la mayoría de los estados de México, incluyendo Jalisco, Nuevo León, Puebla, Veracruz y muchos más.',
+        },
+      },
+    ],
+  };
+
+  return layout({
+    title: 'Zona Horaria por Código Postal de México - Consulta la Hora por CP 2026',
+    description: 'Consulta la zona horaria de cualquier código postal de México. Conoce si tu CP está en horario del Centro, Pacífico, Noroeste o Sureste y la hora actual.',
+    canonical: '/zona-horaria',
+    breadcrumbs: [
+      { name: 'Inicio', url: '/' },
+      { name: 'Zona Horaria por CP', url: '/zona-horaria' },
+    ],
+    structuredData,
+    body: `
+      <div class="card">
+        <h2>Zona Horaria por Código Postal</h2>
+        <p>Ingresa un código postal de 5 dígitos para conocer la zona horaria a la que pertenece, su diferencia con UTC y la hora actual en esa zona.</p>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <input type="text" class="search-box" id="zh-input" placeholder="Ej. 06600" maxlength="5" pattern="\\d{5}" inputmode="numeric" style="margin-bottom:0;flex:1">
+          <button id="zh-btn" style="padding:12px 24px;background:#006847;color:#fff;border:none;border-radius:24px;font-size:1rem;cursor:pointer;font-weight:600;white-space:nowrap">Consultar</button>
+        </div>
+        <div id="zh-result" style="margin-top:16px"></div>
+      </div>
+      ${adSlot('zona-horaria-top')}
+      <div class="card">
+        <h3>Zonas horarias de México</h3>
+        <p>México se divide en <strong>4 zonas horarias</strong> oficiales. Desde octubre de 2022 se eliminó el horario de verano para la mayor parte del país.</p>
+        <table>
+          <thead><tr><th>Zona Horaria</th><th>UTC</th><th>Estados</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Tiempo del Sureste</strong></td><td>UTC-5</td><td>Quintana Roo</td></tr>
+            <tr><td><strong>Tiempo del Centro</strong></td><td>UTC-6</td><td>CDMX, Jalisco, Nuevo León, Puebla, Veracruz, Guanajuato, y 20 estados más</td></tr>
+            <tr><td><strong>Tiempo del Pacífico</strong></td><td>UTC-7</td><td>Baja California Sur, Chihuahua, Nayarit, Sinaloa, Sonora</td></tr>
+            <tr><td><strong>Tiempo del Noroeste</strong></td><td>UTC-8</td><td>Baja California</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>¿Para qué consultar la zona horaria de un CP?</h3>
+        <ul style="padding-left:20px;line-height:2">
+          <li><strong>Llamadas y reuniones:</strong> coordinar horarios con contactos en diferentes estados de México.</li>
+          <li><strong>Logística y entregas:</strong> estimar horarios de entrega considerando la zona horaria del destino.</li>
+          <li><strong>E-commerce:</strong> mostrar horarios de atención al cliente según la zona del comprador.</li>
+          <li><strong>Viajes:</strong> saber si necesitas ajustar tu reloj al llegar a otro estado.</li>
+          <li><strong>Trámites:</strong> conocer el horario de oficinas gubernamentales en otros estados.</li>
+          <li><strong>Programación:</strong> determinar el offset UTC correcto para sistemas que usan códigos postales mexicanos.</li>
+        </ul>
+      </div>
+      ${adSlot('zona-horaria-middle')}
+      <div class="card">
+        <h3>¿México tiene horario de verano?</h3>
+        <p>En <strong>octubre de 2022</strong>, el Congreso de México aprobó la eliminación del horario de verano (cambio de hora estacional) para todo el país. Sin embargo, existe una excepción importante:</p>
+        <p style="margin-top:8px"><strong>Municipios de la franja fronteriza norte:</strong> los municipios que colindan con Estados Unidos (como Tijuana, Mexicali, Ciudad Juárez, Nuevo Laredo y Reynosa) siguen observando el horario de verano al mismo tiempo que sus ciudades vecinas en EE.UU., para facilitar el comercio y la vida cotidiana transfronteriza.</p>
+        <p style="margin-top:8px">Para la mayoría del territorio mexicano, la hora <strong>ya no cambia</strong> en primavera ni en otoño.</p>
+      </div>
+      <div class="card">
+        <h3>Diferencia horaria entre zonas de México</h3>
+        <p>La diferencia máxima entre zonas horarias dentro de México es de <strong>3 horas</strong> (entre Quintana Roo y Baja California).</p>
+        <table>
+          <thead><tr><th>Si en CDMX son las 12:00</th><th>En otras zonas son</th></tr></thead>
+          <tbody>
+            <tr><td>Cancún (Quintana Roo)</td><td><strong>13:00</strong> (+1h)</td></tr>
+            <tr><td>Guadalajara (Jalisco)</td><td><strong>12:00</strong> (misma hora)</td></tr>
+            <tr><td>Los Mochis (Sinaloa)</td><td><strong>11:00</strong> (-1h)</td></tr>
+            <tr><td>Hermosillo (Sonora)</td><td><strong>11:00</strong> (-1h)</td></tr>
+            <tr><td>Tijuana (Baja California)</td><td><strong>10:00</strong> (-2h)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Preguntas frecuentes</h3>
+        <h4 style="margin-top:12px">¿Sonora tiene horario de verano?</h4>
+        <p>No. Sonora nunca ha observado el horario de verano, por lo que mantiene UTC-7 todo el año. Esto hace que en verano tenga la misma hora que Baja California (UTC-8 + DST = UTC-7), y en invierno tenga la misma hora que Sinaloa y Nayarit.</p>
+        <h4 style="margin-top:12px">¿Quintana Roo cambió de zona horaria?</h4>
+        <p>Sí. En 2015, Quintana Roo se movió del Tiempo del Centro (UTC-6) al Tiempo del Sureste (UTC-5) para aprovechar más luz solar en la tarde, beneficiando al sector turístico de Cancún y la Riviera Maya.</p>
+        <h4 style="margin-top:12px">¿Cómo afecta la zona horaria a los envíos?</h4>
+        <p>Si envías un paquete de CDMX a Tijuana, ten en cuenta que hay 2 horas de diferencia. Un paquete que sale a las 10:00 hora centro, sale a las 8:00 hora del Noroeste. Las empresas de paquetería suelen mostrar horarios en la zona horaria local del destino.</p>
+      </div>
+      <div class="card">
+        <h3>Otras herramientas útiles</h3>
+        <div class="tools-grid">
+          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un CP existe</small></a>
+          <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra el CP más cercano</small></a>
+          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km en línea recta</small></a>
+        </div>
+      </div>
+      ${adSlot('zona-horaria-bottom')}
+      <script>
+(function(){
+  var input = document.getElementById('zh-input');
+  var btn = document.getElementById('zh-btn');
+  var result = document.getElementById('zh-result');
+  function consultar() {
+    var cp = input.value.trim();
+    if (!/^\\d{5}$/.test(cp)) {
+      result.innerHTML = '<p style="color:#d32f2f;padding:8px">⚠ Ingresa exactamente 5 dígitos.</p>';
+      return;
+    }
+    result.innerHTML = '<p style="color:#4a4a4a;padding:8px">Consultando...</p>';
+    fetch('/api/zona-horaria?cp=' + cp).then(function(r){return r.json()}).then(function(data){
+      if (data.error) {
+        result.innerHTML = '<div class="result-box result-box--err"><h3>✗ ' + data.error + '</h3></div>';
+        return;
+      }
+      result.innerHTML = '<div class="result-box result-box--ok">' +
+        '<h3>🕐 ' + data.zona_horaria + '</h3>' +
+        '<div class="info-grid">' +
+        '<div class="info-item"><div class="info-label">Código Postal</div><div class="info-value"><a href="/codigo-postal/' + data.codigo_postal + '">' + data.codigo_postal + '</a></div></div>' +
+        '<div class="info-item"><div class="info-label">Hora Actual</div><div class="info-value" style="font-size:1.3rem;font-weight:700">' + data.hora_actual + '</div></div>' +
+        '<div class="info-item"><div class="info-label">Estado</div><div class="info-value">' + data.estado + '</div></div>' +
+        '<div class="info-item"><div class="info-label">Offset UTC</div><div class="info-value">' + data.utc + ' (' + data.abreviatura + ')</div></div>' +
+        '<div class="info-item"><div class="info-label">Municipio</div><div class="info-value">' + data.municipio + '</div></div>' +
+        '<div class="info-item"><div class="info-label">Horario de Verano</div><div class="info-value">No aplica</div></div>' +
+        '</div>' +
+        '</div>';
+    });
+  }
+  btn.addEventListener('click', consultar);
+  input.addEventListener('keydown', function(e){ if(e.key==='Enter') consultar(); });
 })();
       </script>`,
   });
