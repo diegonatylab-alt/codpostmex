@@ -235,7 +235,10 @@ function adSlotBanner(slot: string, className: string = ''): string {
 // ============================================================
 // Home Page
 // ============================================================
-export function homePage(estados: { nombre: string; slug: string; count: number }[]): string {
+export function homePage(
+  estados: { nombre: string; slug: string; count: number }[],
+  stats: { totalCPs: number; totalColonias: number; totalMunicipios: number }
+): string {
   const estadosGrid = estados
     .map(
       e =>
@@ -243,41 +246,132 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
     )
     .join('');
 
+  const structuredData = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: SITE_NAME,
+      url: SITE_URL,
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: `${SITE_URL}/api/buscar?q={search_term_string}`,
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: '¿Qué es un código postal y para qué sirve?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'El código postal (CP) es un número de 5 dígitos asignado por el Servicio Postal Mexicano (SEPOMEX) para identificar zonas de entrega de correspondencia en México. Sirve para enviar cartas y paquetes, completar formularios de compras en línea, trámites bancarios, facturación electrónica (CFDI) y registros oficiales.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: '¿Cómo encontrar mi código postal?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Puedes encontrar tu código postal de varias formas: 1) Busca por nombre de colonia o municipio en nuestro buscador. 2) Navega por estado y municipio hasta encontrar tu colonia. 3) Usa la herramienta de búsqueda por ubicación GPS. 4) Consulta un recibo de luz, agua o estado de cuenta bancario donde aparece tu CP.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: '¿Cuántos códigos postales hay en México?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: `México cuenta con más de ${stats.totalCPs.toLocaleString('es-MX')} códigos postales activos, distribuidos en 32 estados, que cubren más de ${stats.totalMunicipios.toLocaleString('es-MX')} municipios y ${stats.totalColonias.toLocaleString('es-MX')} colonias. Los códigos van del 01000 (Ciudad de México) al 99990.`,
+          },
+        },
+        {
+          '@type': 'Question',
+          name: '¿Cómo se estructura un código postal mexicano?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Los códigos postales de México tienen 5 dígitos. Los primeros 2 dígitos indican el estado o región geográfica, el tercer dígito identifica una zona dentro del estado, y los últimos 2 dígitos especifican la colonia o grupo de colonias. Por ejemplo, en el CP 06600: 06 = Ciudad de México, 6 = zona centro, 00 = Col. Juárez/Roma Norte.',
+          },
+        },
+      ],
+    },
+  ];
+
   return layout({
     title: `Códigos Postales de México 2026 - Buscar CP por Colonia, Municipio o Estado`,
     description:
-      'Consulta los códigos postales de México actualizados 2026. Busca por número de CP, colonia, municipio o estado. Base de datos completa con todos los códigos de SEPOMEX.',
+      'Consulta los códigos postales de México actualizados 2026. Busca por número de CP, colonia, municipio o estado. Base de datos completa con más de ' + stats.totalCPs.toLocaleString('es-MX') + ' códigos de SEPOMEX.',
     canonical: '/',
+    structuredData,
     body: `
       <div class="card">
-        <h2>Buscar Código Postal</h2>
+        <h2>Buscar Código Postal de México</h2>
+        <p>Consulta cualquiera de los <strong>${stats.totalCPs.toLocaleString('es-MX')}</strong> códigos postales de México. Escribe un CP, nombre de colonia o municipio para encontrar resultados al instante.</p>
         <input type="text" class="search-box" id="search" placeholder="Escribe un código postal, colonia o municipio..." autocomplete="off">
         <div id="results"></div>
       </div>
       ${adSlotBanner('home-top', 'home-top-ad')}
       <div class="card">
         <h2>Códigos Postales por Estado</h2>
+        <p>México tiene <strong>32 estados</strong> con más de <strong>${stats.totalMunicipios.toLocaleString('es-MX')}</strong> municipios y <strong>${stats.totalColonias.toLocaleString('es-MX')}</strong> colonias. Selecciona un estado para explorar todos sus códigos postales.</p>
         <div class="grid">${estadosGrid}</div>
       </div>
-      ${adSlot('home-bottom')}
+      ${adSlot('home-mid1')}
       <div class="card">
         <h2>¿Qué es un código postal?</h2>
-        <p>El código postal (CP) es un número de 5 dígitos asignado por el Servicio Postal Mexicano (SEPOMEX) 
-        para identificar cada zona de entrega de correspondencia en México. Cada código postal puede incluir 
-        una o más colonias dentro de un municipio.</p>
+        <p>El <strong>código postal</strong> (CP) es un número de <strong>5 dígitos</strong> asignado por el Servicio Postal Mexicano (<strong>SEPOMEX</strong>) para identificar cada zona de entrega de correspondencia en México. Cada código postal puede incluir una o más colonias dentro de un municipio.</p>
+        <p style="margin-top:8px">Los códigos postales son esenciales para:</p>
+        <ul style="padding-left:20px;line-height:2">
+          <li><strong>Envíos y paquetería:</strong> toda empresa de mensajería (SEPOMEX, DHL, FedEx, Estafeta, Correos de México) requiere el CP para entregar tu paquete.</li>
+          <li><strong>Compras en línea:</strong> tiendas como Amazon, Mercado Libre y Liverpool piden el CP para calcular el costo y tiempo de envío.</li>
+          <li><strong>Facturación electrónica (CFDI):</strong> el SAT exige el código postal correcto del emisor y receptor en cada factura.</li>
+          <li><strong>Trámites bancarios:</strong> bancos como BBVA, Banorte, Santander y Banamex solicitan el CP para verificar tu dirección.</li>
+          <li><strong>Registros oficiales:</strong> INE, CURP, pasaporte y otros documentos oficiales incluyen el código postal.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>¿Cómo encontrar mi código postal?</h3>
+        <p>Existen varias formas de encontrar tu código postal:</p>
+        <table>
+          <thead><tr><th>Método</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Buscar por colonia</strong></td><td>Escribe el nombre de tu colonia en el <a href="#search">buscador</a> de arriba y encuentra el CP al instante.</td></tr>
+            <tr><td><strong>Navegar por estado</strong></td><td>Selecciona tu <a href="/estados">estado</a>, luego municipio, y busca tu colonia en la lista.</td></tr>
+            <tr><td><strong>Ubicación GPS</strong></td><td>Usa nuestra herramienta de <a href="/buscar-por-ubicacion">búsqueda por ubicación</a> para encontrar el CP más cercano a ti.</td></tr>
+            <tr><td><strong>Prefijo del CP</strong></td><td>Si conoces los primeros 2 dígitos, navega por <a href="/codigos-postales">prefijo</a> para encontrar todos los CPs de esa región.</td></tr>
+            <tr><td><strong>Recibos de servicios</strong></td><td>Tu código postal aparece en recibos de CFE (luz), agua, teléfono y estados de cuenta bancarios.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      ${adSlot('home-mid2')}
+      <div class="card">
+        <h3>Estructura del código postal mexicano</h3>
+        <p>Los 5 dígitos del código postal no son aleatorios. Cada grupo de dígitos tiene un significado geográfico:</p>
+        <table>
+          <thead><tr><th>Posición</th><th>Significado</th><th>Ejemplo (CP 44100)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Dígitos 1-2</strong></td><td>Estado o región geográfica</td><td>44 → Jalisco</td></tr>
+            <tr><td><strong>Dígito 3</strong></td><td>Zona dentro del estado</td><td>1 → Zona centro de Guadalajara</td></tr>
+            <tr><td><strong>Dígitos 4-5</strong></td><td>Colonia o área de entrega</td><td>00 → Centro histórico</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:12px">Los prefijos van del <strong>01</strong> (Ciudad de México) al <strong>99</strong> (Yucatán). Explora todos en nuestra <a href="/codigos-postales">página de prefijos</a>.</p>
       </div>
       <div class="card">
         <h3>📮 ¿Cómo escribir correctamente una dirección postal?</h3>
-        <p>Conoce el formato oficial de SEPOMEX, el orden correcto de los campos y ejemplos reales para que tus envíos lleguen sin problemas.</p>
+        <p>El formato correcto de una dirección en México incluye: nombre del destinatario, calle y número, colonia, código postal, municipio, estado y país (para envíos internacionales). Un error en cualquiera de estos campos puede retrasar o impedir la entrega.</p>
         <p style="margin-top:12px"><a href="/formato-direccion" style="display:inline-block;padding:10px 20px;background:#006847;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Ver guía de formato de dirección →</a></p>
       </div>
       <div class="card">
         <h3>🔢 Navegar códigos postales por prefijo</h3>
-        <p>Los primeros 2 dígitos del CP indican la región. Explora todos los rangos de códigos postales de México.</p>
+        <p>Los primeros 2 dígitos del CP indican la región. Por ejemplo, los CPs que inician con <strong>01-16</strong> pertenecen a la Ciudad de México, <strong>44-48</strong> a Jalisco, y <strong>64-67</strong> a Nuevo León. Explora todos los rangos.</p>
         <p style="margin-top:12px"><a href="/codigos-postales" style="display:inline-block;padding:10px 20px;background:#006847;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Ver prefijos de CP →</a></p>
       </div>
+      ${adSlot('home-mid3')}
       <div class="card">
         <h3>✅ Herramientas de códigos postales</h3>
+        <p>Herramientas gratuitas para trabajar con códigos postales de México:</p>
         <div class="tools-grid">
           <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un CP existe</small></a>
           <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra el CP más cercano</small></a>
@@ -285,6 +379,45 @@ export function homePage(estados: { nombre: string; slug: string; count: number 
           <a href="/zona-horaria"><strong>Zona Horaria</strong><br><small>Consulta la hora por CP</small></a>
         </div>
       </div>
+      <div class="card">
+        <h3>Códigos postales más consultados en México</h3>
+        <table>
+          <thead><tr><th>Código Postal</th><th>Zona</th><th>Ciudad</th></tr></thead>
+          <tbody>
+            <tr><td><a href="/codigo-postal/06600">06600</a></td><td>Col. Juárez, Roma Norte, Condesa</td><td>Ciudad de México</td></tr>
+            <tr><td><a href="/codigo-postal/01000">01000</a></td><td>San Ángel</td><td>Ciudad de México</td></tr>
+            <tr><td><a href="/codigo-postal/44100">44100</a></td><td>Centro histórico</td><td>Guadalajara, Jalisco</td></tr>
+            <tr><td><a href="/codigo-postal/64000">64000</a></td><td>Centro</td><td>Monterrey, Nuevo León</td></tr>
+            <tr><td><a href="/codigo-postal/72000">72000</a></td><td>Centro histórico</td><td>Puebla, Puebla</td></tr>
+            <tr><td><a href="/codigo-postal/77500">77500</a></td><td>Zona hotelera</td><td>Cancún, Quintana Roo</td></tr>
+            <tr><td><a href="/codigo-postal/22000">22000</a></td><td>Zona Centro</td><td>Tijuana, Baja California</td></tr>
+            <tr><td><a href="/codigo-postal/97000">97000</a></td><td>Centro histórico</td><td>Mérida, Yucatán</td></tr>
+          </tbody>
+        </table>
+      </div>
+      ${adSlot('home-mid4')}
+      <div class="card">
+        <h3>Preguntas frecuentes sobre códigos postales</h3>
+        <h4 style="margin-top:12px">¿Cuántos dígitos tiene un código postal en México?</h4>
+        <p>Todos los códigos postales mexicanos tienen exactamente <strong>5 dígitos</strong> numéricos. Si tu CP tiene menos de 5 dígitos, agrega ceros a la izquierda (ejemplo: 1000 → 01000).</p>
+        <h4 style="margin-top:12px">¿Quién asigna los códigos postales en México?</h4>
+        <p>Los códigos postales son asignados por el <strong>Servicio Postal Mexicano (SEPOMEX)</strong>, que depende de la Secretaría de Infraestructura, Comunicaciones y Transportes (SICT). SEPOMEX mantiene y actualiza el catálogo oficial de CPs.</p>
+        <h4 style="margin-top:12px">¿Un código postal puede tener varias colonias?</h4>
+        <p>Sí, es muy común. Un solo CP puede abarcar varias colonias dentro del mismo municipio. Por ejemplo, el CP <a href="/codigo-postal/06600">06600</a> en CDMX incluye las colonias Juárez, Roma Norte y partes de la Condesa.</p>
+        <h4 style="margin-top:12px">¿Qué pasa si uso un código postal incorrecto?</h4>
+        <p>Si el CP no coincide con la colonia, tu envío puede retrasarse, ser devuelto o entregarse en la zona equivocada. En facturación electrónica (CFDI), un CP incorrecto puede causar el rechazo de la factura por parte del SAT.</p>
+        <h4 style="margin-top:12px">¿Los códigos postales cambian?</h4>
+        <p>Sí, SEPOMEX actualiza periódicamente su catálogo. Se crean nuevos CPs para colonias y fraccionamientos nuevos, y ocasionalmente se modifican los existentes. Nuestra base de datos se mantiene actualizada con los últimos cambios.</p>
+        <h4 style="margin-top:12px">¿Cómo saber si un código postal es válido?</h4>
+        <p>Usa nuestro <a href="/validar-cp">validador de códigos postales</a>. Ingresa los 5 dígitos y el sistema te indica si existe, a qué estado y municipio pertenece, y las colonias que incluye.</p>
+      </div>
+      <div class="card">
+        <h3>Acerca de Buscar CP México</h3>
+        <p><strong>Buscar CP México</strong> es una plataforma gratuita para consultar códigos postales de México de forma rápida y confiable. Nuestra base de datos incluye más de <strong>${stats.totalCPs.toLocaleString('es-MX')}</strong> códigos postales, <strong>${stats.totalColonias.toLocaleString('es-MX')}</strong> colonias y <strong>${stats.totalMunicipios.toLocaleString('es-MX')}</strong> municipios de los 32 estados del país.</p>
+        <p style="margin-top:8px">La información proviene de fuentes públicas del Servicio Postal Mexicano (SEPOMEX) y se presenta en una interfaz optimizada para velocidad y facilidad de uso. Ofrecemos herramientas como validación de CP, búsqueda por ubicación GPS, cálculo de distancias y consulta de zonas horarias.</p>
+        <p style="margin-top:8px"><a href="/acerca-de">Conoce más sobre nosotros →</a></p>
+      </div>
+      ${adSlot('home-bottom')}
       <script>
         const searchInput = document.getElementById('search');
         const resultsDiv = document.getElementById('results');
