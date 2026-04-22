@@ -307,7 +307,7 @@ export function homePage(
     body: `
       <div class="card">
         <h2>Buscar Código Postal de México</h2>
-        <p>Consulta cualquiera de los <strong>${stats.totalCPs.toLocaleString('es-MX')}</strong> códigos postales de México. Escribe un CP, nombre de colonia o municipio para encontrar resultados al instante.</p>
+        <p style="margin-bottom:16px">Consulta cualquiera de los <strong>${stats.totalCPs.toLocaleString('es-MX')}</strong> códigos postales de México. Escribe un CP, nombre de colonia o municipio para encontrar resultados al instante.</p>
         <input type="text" class="search-box" id="search" placeholder="Escribe un código postal, colonia o municipio..." autocomplete="off">
         <div id="results"></div>
       </div>
@@ -1030,8 +1030,8 @@ export function notFoundPage(): string {
 // ============================================================
 export function avisoLegalPage(): string {
   return layout({
-    title: `Aviso Legal | ${SITE_NAME}`,
-    description: 'Aviso legal y términos de uso del sitio.',
+    title: `Aviso Legal y Términos de Uso | ${SITE_NAME}`,
+    description: 'Aviso legal, términos de uso, limitación de responsabilidad y condiciones de uso del sitio Buscar CP México.',
     canonical: '/aviso-legal',
     breadcrumbs: [
       { name: 'Inicio', url: '/' },
@@ -1039,16 +1039,60 @@ export function avisoLegalPage(): string {
     ],
     body: `
       <div class="card">
-        <h2>Aviso Legal</h2>
-        <p>La información de códigos postales proporcionada en este sitio proviene de fuentes públicas 
-        del Servicio Postal Mexicano (SEPOMEX). Aunque nos esforzamos por mantener la información 
-        actualizada y precisa, no garantizamos su exactitud completa.</p>
-        <p style="margin-top:12px">Para confirmar un código postal de forma oficial, consulta el 
-        <a href="https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/Descarga.aspx" 
-        rel="nofollow noopener" target="_blank">sitio oficial de SEPOMEX</a>.</p>
-        <h3 style="margin-top:20px">Publicidad</h3>
-        <p>Este sitio utiliza Google AdSense para mostrar anuncios. Google puede usar cookies para 
-        personalizar los anuncios según tus intereses.</p>
+        <h2>Aviso Legal y Términos de Uso</h2>
+        <p>El presente aviso legal regula las condiciones de uso del sitio web <strong>buscarcpmexico.com</strong> (en adelante, "el Sitio"). Al acceder y utilizar este sitio, aceptas las condiciones descritas a continuación.</p>
+      </div>
+      <div class="card">
+        <h3>1. Titularidad del sitio</h3>
+        <p>El Sitio es operado de forma independiente con el objetivo de proporcionar una herramienta gratuita de consulta de códigos postales de México. No es un sitio oficial del gobierno mexicano ni del Servicio Postal Mexicano (SEPOMEX).</p>
+      </div>
+      <div class="card">
+        <h3>2. Fuente de la información</h3>
+        <p>La información de códigos postales publicada en este sitio proviene de fuentes públicas del Servicio Postal Mexicano (SEPOMEX) y de la base de datos geográfica GeoNames. Aunque nos esforzamos por mantener los datos actualizados y precisos, <strong>no garantizamos su exactitud, integridad o vigencia</strong>.</p>
+        <p style="margin-top:12px">Para confirmar un código postal de forma oficial, consulta el <a href="https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/Descarga.aspx" rel="nofollow noopener" target="_blank">sitio oficial de SEPOMEX</a>.</p>
+      </div>
+      <div class="card">
+        <h3>3. Limitación de responsabilidad</h3>
+        <p>El uso de la información proporcionada en este sitio es bajo tu propia responsabilidad. El Sitio no se hace responsable de:</p>
+        <ul style="padding-left:20px;line-height:2">
+          <li>Errores u omisiones en los datos de códigos postales, colonias, municipios o estados.</li>
+          <li>Pérdidas, retrasos o daños derivados del uso de información incorrecta o desactualizada.</li>
+          <li>Envíos extraviados o devueltos por usar un código postal incorrecto obtenido de este sitio.</li>
+          <li>Problemas con la facturación electrónica (CFDI) derivados de un CP incorrecto.</li>
+          <li>Interrupciones del servicio, errores técnicos o falta de disponibilidad del sitio.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>4. Uso permitido</h3>
+        <p>El Sitio está diseñado para consultas personales y profesionales legítimas de códigos postales. Queda prohibido:</p>
+        <ul style="padding-left:20px;line-height:2">
+          <li>Realizar scraping masivo o automatizado del contenido sin autorización.</li>
+          <li>Reproducir, distribuir o comercializar el contenido del sitio sin permiso.</li>
+          <li>Intentar vulnerar la seguridad, sobrecargar los servidores o interferir con el funcionamiento del sitio.</li>
+          <li>Usar el sitio o su API para actividades ilegales o fraudulentas.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>5. Propiedad intelectual</h3>
+        <p>El diseño, código, textos originales, estructura y funcionalidades del Sitio son propiedad de sus creadores. Los datos de códigos postales provienen de fuentes públicas y no son propiedad exclusiva del Sitio. Las marcas mencionadas (SEPOMEX, SAT, etc.) pertenecen a sus respectivos titulares.</p>
+      </div>
+      <div class="card">
+        <h3>6. Publicidad y terceros</h3>
+        <p>Este sitio utiliza <strong>Google AdSense</strong> para mostrar anuncios. Google y sus socios publicitarios pueden usar cookies para personalizar los anuncios según tus intereses y tu historial de navegación. El Sitio no controla el contenido de los anuncios mostrados por terceros.</p>
+        <p style="margin-top:8px">Para más información sobre cómo Google usa tus datos, consulta la <a href="https://policies.google.com/privacy" rel="nofollow noopener" target="_blank">Política de Privacidad de Google</a>.</p>
+      </div>
+      <div class="card">
+        <h3>7. Enlaces externos</h3>
+        <p>El Sitio puede contener enlaces a sitios web de terceros (como el sitio oficial de SEPOMEX o Google Maps). No nos responsabilizamos del contenido, políticas de privacidad o disponibilidad de estos sitios externos.</p>
+      </div>
+      <div class="card">
+        <h3>8. Modificaciones</h3>
+        <p>Nos reservamos el derecho de modificar estos términos en cualquier momento sin previo aviso. Las modificaciones entrarán en vigor desde su publicación en esta página. Te recomendamos revisar periódicamente esta sección.</p>
+        <p style="margin-top:12px"><strong>Última actualización:</strong> abril de 2026.</p>
+      </div>
+      <div class="card">
+        <h3>9. Contacto</h3>
+        <p>Para consultas legales, reportar errores o solicitar la eliminación de contenido, escribe a <a href="mailto:diegonatylab@gmail.com">diegonatylab@gmail.com</a>.</p>
       </div>`,
   });
 }
@@ -1080,8 +1124,8 @@ export function avisoLegalPage(): string {
   // ============================================================
   export function acercaDePage(): string {
     return layout({
-      title: `Acerca de | ${SITE_NAME}`,
-      description: 'Conoce el objetivo de Buscar CP Mexico y como se actualiza la información de códigos postales.',
+      title: `Acerca de Buscar CP México - Quiénes Somos | ${SITE_NAME}`,
+      description: 'Conoce el objetivo de Buscar CP México, cómo funciona nuestra base de datos de códigos postales, nuestras herramientas y cómo se actualiza la información.',
       canonical: '/acerca-de',
       breadcrumbs: [
         { name: 'Inicio', url: '/' },
@@ -1089,10 +1133,62 @@ export function avisoLegalPage(): string {
       ],
       body: `
         <div class="card">
-          <h2>Acerca de Buscar CP Mexico</h2>
-          <p>Buscar CP Mexico es una plataforma para consultar códigos postales de forma rápida por estado, municipio, colonia o código postal.</p>
-          <p style="margin-top:12px">Nuestro objetivo es facilitar la búsqueda de información para usuarios, comercios electrónicos, envíos y trámites.</p>
-          <p style="margin-top:12px">La información se obtiene de fuentes públicas y se presenta en una interfaz optimizada para SEO, velocidad y usabilidad.</p>
+          <h2>Acerca de Buscar CP México</h2>
+          <p><strong>Buscar CP México</strong> es una plataforma gratuita e independiente creada para facilitar la consulta de códigos postales de la República Mexicana. Nuestro objetivo es ofrecer la forma más rápida, sencilla y confiable de encontrar información postal para cualquier ubicación en México.</p>
+        </div>
+        <div class="card">
+          <h3>Nuestra misión</h3>
+          <p>Facilitar el acceso a la información de códigos postales de México para ciudadanos, empresas, desarrolladores y comercios electrónicos. Sabemos que encontrar un código postal correcto es esencial para enviar paquetes, completar formularios, emitir facturas y realizar trámites, y queremos que sea un proceso rápido y sin complicaciones.</p>
+        </div>
+        <div class="card">
+          <h3>¿Qué ofrecemos?</h3>
+          <ul style="padding-left:20px;line-height:2">
+            <li><strong>Buscador de códigos postales:</strong> encuentra cualquier CP por número, colonia, municipio o estado con resultados instantáneos.</li>
+            <li><strong>Navegación por estado y municipio:</strong> explora la estructura completa de códigos postales organizados geográficamente.</li>
+            <li><strong>Navegación por prefijo:</strong> consulta todos los CPs agrupados por sus primeros 2 dígitos.</li>
+            <li><strong><a href="/validar-cp">Validador de CP:</a></strong> verifica si un código postal existe y consulta su información detallada.</li>
+            <li><strong><a href="/buscar-por-ubicacion">Búsqueda por ubicación GPS:</a></strong> encuentra el código postal más cercano a tu posición actual.</li>
+            <li><strong><a href="/distancia">Calculadora de distancia:</a></strong> calcula la distancia en kilómetros entre dos códigos postales.</li>
+            <li><strong><a href="/zona-horaria">Zona horaria por CP:</a></strong> consulta la zona horaria y hora actual de cualquier código postal.</li>
+            <li><strong><a href="/formato-direccion">Guía de formato de dirección:</a></strong> aprende a escribir correctamente una dirección postal mexicana.</li>
+            <li><strong>Mapas interactivos:</strong> visualiza la ubicación de colonias y códigos postales en un mapa.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Fuentes de información</h3>
+          <p>Nuestra base de datos se construye a partir de las siguientes fuentes públicas:</p>
+          <ul style="padding-left:20px;line-height:2">
+            <li><strong>SEPOMEX (Servicio Postal Mexicano):</strong> catálogo oficial de códigos postales, colonias, municipios y estados de México.</li>
+            <li><strong>GeoNames:</strong> base de datos geográfica abierta con coordenadas GPS para cada código postal.</li>
+          </ul>
+          <p style="margin-top:12px">Los datos se procesan, limpian y organizan para ofrecer una experiencia de consulta optimizada. Si bien nos esforzamos por mantener la información actualizada, recomendamos verificar datos críticos (como los usados en facturación) directamente con SEPOMEX.</p>
+        </div>
+        <div class="card">
+          <h3>Tecnología</h3>
+          <p>Buscar CP México está construido con tecnología moderna para ofrecer la mejor experiencia posible:</p>
+          <ul style="padding-left:20px;line-height:2">
+            <li><strong>Velocidad:</strong> el sitio se sirve desde la red global de Cloudflare, con servidores cercanos a ti sin importar dónde estés en México.</li>
+            <li><strong>Sin registro:</strong> no necesitas crear una cuenta ni iniciar sesión. Todas las consultas son gratuitas e ilimitadas.</li>
+            <li><strong>Funciona en cualquier dispositivo:</strong> diseño responsivo que se adapta a celulares, tablets y computadoras.</li>
+            <li><strong>Privacidad:</strong> no almacenamos las consultas que realizas. Tu búsqueda es privada.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Preguntas frecuentes</h3>
+          <h4 style="margin-top:12px">¿Es un sitio oficial del gobierno?</h4>
+          <p>No. Buscar CP México es un proyecto independiente. No estamos afiliados al Servicio Postal Mexicano (SEPOMEX), Correos de México ni a ninguna entidad gubernamental. La información se obtiene de fuentes públicas.</p>
+          <h4 style="margin-top:12px">¿El servicio es gratuito?</h4>
+          <p>Sí, completamente gratuito. El sitio se mantiene mediante publicidad (Google AdSense).</p>
+          <h4 style="margin-top:12px">¿Puedo reportar un error en los datos?</h4>
+          <p>Sí. Si encuentras un código postal incorrecto, una colonia mal escrita o cualquier otro error, escríbenos a <a href="mailto:diegonatylab@gmail.com">diegonatylab@gmail.com</a> y lo corregiremos lo antes posible.</p>
+          <h4 style="margin-top:12px">¿Con qué frecuencia se actualizan los datos?</h4>
+          <p>Actualizamos la base de datos periódicamente cuando SEPOMEX publica nuevos catálogos. También corregimos errores reportados por los usuarios.</p>
+        </div>
+        <div class="card">
+          <h3>Contacto</h3>
+          <p>Para reportar errores, hacer sugerencias o consultas comerciales:</p>
+          <p style="margin-top:8px"><strong>Email:</strong> <a href="mailto:diegonatylab@gmail.com">diegonatylab@gmail.com</a></p>
+          <p style="margin-top:8px">También puedes visitar nuestra <a href="/contacto">página de contacto</a> para más información.</p>
         </div>`,
     });
   }
@@ -1103,7 +1199,7 @@ export function avisoLegalPage(): string {
   export function politicaPrivacidadPage(): string {
     return layout({
       title: `Política de Privacidad | ${SITE_NAME}`,
-      description: 'Consulta cómo se recopilan y usan los datos en Buscar CP Mexico, incluyendo cookies y publicidad de terceros.',
+      description: 'Política de privacidad de Buscar CP México. Información sobre recopilación de datos, cookies, Google AdSense, derechos del usuario y contacto.',
       canonical: '/politica-de-privacidad',
       breadcrumbs: [
         { name: 'Inicio', url: '/' },
@@ -1112,14 +1208,100 @@ export function avisoLegalPage(): string {
       body: `
         <div class="card">
           <h2>Política de Privacidad</h2>
-          <p>En Buscar CP Mexico respetamos tu privacidad. Este sitio puede recopilar datos técnicos anónimos como dirección IP, navegador, país y páginas visitadas para analítica y mejora del servicio.</p>
-          <h3 style="margin-top:20px">Cookies</h3>
-          <p>Utilizamos cookies propias y de terceros para recordar preferencias, medir tráfico y mostrar publicidad relevante.</p>
-          <h3 style="margin-top:20px">Google AdSense</h3>
-          <p>Google puede usar cookies para personalizar anuncios. Puedes administrar preferencias en la configuración de anuncios de Google.</p>
-          <h3 style="margin-top:20px">Derechos del usuario</h3>
-          <p>Si deseas solicitar la eliminación de información de contacto o realizar una consulta sobre privacidad, escribe a <a href="mailto:diegonatylab@gmail.com">diegonatylab@gmail.com</a>.</p>
-          <p style="margin-top:12px">Última actualización: abril de 2026.</p>
+          <p>En <strong>Buscar CP México</strong> (buscarcpmexico.com) respetamos tu privacidad y nos comprometemos a proteger la información personal que puedas proporcionarnos. Esta política describe qué datos recopilamos, cómo los usamos y cuáles son tus derechos.</p>
+          <p style="margin-top:8px"><strong>Última actualización:</strong> abril de 2026.</p>
+        </div>
+        <div class="card">
+          <h3>1. Información que recopilamos</h3>
+          <p>Este sitio <strong>no requiere registro ni inicio de sesión</strong>. No recopilamos información personal identificable (nombre, email, dirección) a menos que nos contactes directamente por correo electrónico.</p>
+          <p style="margin-top:8px">De forma automática, podemos recopilar datos técnicos anónimos como:</p>
+          <ul style="padding-left:20px;line-height:2">
+            <li><strong>Dirección IP:</strong> para seguridad y prevención de abuso del servicio.</li>
+            <li><strong>Tipo de navegador y dispositivo:</strong> para optimizar la experiencia de uso.</li>
+            <li><strong>País y región general:</strong> para analítica de tráfico (no se identifica tu ubicación exacta).</li>
+            <li><strong>Páginas visitadas y tiempo de visita:</strong> para entender cómo se usa el sitio y mejorar el contenido.</li>
+            <li><strong>URL de referencia:</strong> para saber cómo llegaste al sitio.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>2. Consultas de códigos postales</h3>
+          <p><strong>No almacenamos las consultas de códigos postales que realizas.</strong> Cuando buscas un CP, la consulta se procesa en el servidor y se devuelve el resultado, sin guardar registro de qué códigos postales consultaste.</p>
+          <p style="margin-top:8px">Si usas la función de <a href="/buscar-por-ubicacion">búsqueda por ubicación GPS</a>, tus coordenadas se envían al servidor únicamente para encontrar los códigos postales cercanos y <strong>no se almacenan</strong>.</p>
+        </div>
+        <div class="card">
+          <h3>3. Cookies</h3>
+          <p>Utilizamos cookies propias y de terceros para los siguientes fines:</p>
+          <ul style="padding-left:20px;line-height:2">
+            <li><strong>Cookies técnicas:</strong> necesarias para el funcionamiento correcto del sitio (caché, seguridad).</li>
+            <li><strong>Cookies de analítica:</strong> para medir el tráfico y entender el comportamiento de los usuarios de forma agregada y anónima.</li>
+            <li><strong>Cookies de publicidad (Google AdSense):</strong> Google y sus socios publicitarios usan cookies para mostrar anuncios personalizados basados en tus visitas a este sitio y a otros sitios en Internet.</li>
+          </ul>
+          <p style="margin-top:12px">Puedes configurar tu navegador para rechazar cookies o eliminar las existentes. Ten en cuenta que desactivar las cookies puede afectar la funcionalidad del sitio.</p>
+        </div>
+        <div class="card">
+          <h3>4. Google AdSense y publicidad</h3>
+          <p>Este sitio utiliza <strong>Google AdSense</strong> para mostrar anuncios. Google AdSense es un servicio de publicidad proporcionado por Google LLC.</p>
+          <p style="margin-top:8px">Google puede usar la información recopilada mediante cookies para:</p>
+          <ul style="padding-left:20px;line-height:2">
+            <li>Mostrar anuncios personalizados basados en tus intereses.</li>
+            <li>Limitar el número de veces que ves un anuncio.</li>
+            <li>Medir la efectividad de las campañas publicitarias.</li>
+          </ul>
+          <p style="margin-top:12px">Para más información o para gestionar tus preferencias de anuncios personalizados, visita:</p>
+          <ul style="padding-left:20px;line-height:2">
+            <li><a href="https://adssettings.google.com" rel="nofollow noopener" target="_blank">Configuración de anuncios de Google</a></li>
+            <li><a href="https://policies.google.com/privacy" rel="nofollow noopener" target="_blank">Política de privacidad de Google</a></li>
+            <li><a href="https://www.aboutads.info/choices/" rel="nofollow noopener" target="_blank">Opciones de publicidad (DAA)</a></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>5. Uso de la información</h3>
+          <p>La información técnica recopilada se utiliza exclusivamente para:</p>
+          <ul style="padding-left:20px;line-height:2">
+            <li>Mantener y mejorar el funcionamiento del sitio.</li>
+            <li>Analizar el tráfico y entender las necesidades de los usuarios.</li>
+            <li>Prevenir el uso abusivo del servicio y proteger la seguridad del sitio.</li>
+            <li>Mostrar publicidad relevante a través de Google AdSense.</li>
+          </ul>
+          <p style="margin-top:8px"><strong>No vendemos, alquilamos ni compartimos tu información personal con terceros</strong>, excepto cuando sea requerido por ley.</p>
+        </div>
+        <div class="card">
+          <h3>6. Servicios de terceros</h3>
+          <p>El sitio utiliza los siguientes servicios de terceros que pueden recopilar información:</p>
+          <table>
+            <thead><tr><th>Servicio</th><th>Proveedor</th><th>Propósito</th></tr></thead>
+            <tbody>
+              <tr><td>Google AdSense</td><td>Google LLC</td><td>Publicidad</td></tr>
+              <tr><td>Cloudflare</td><td>Cloudflare, Inc.</td><td>CDN, seguridad y rendimiento</td></tr>
+              <tr><td>OpenStreetMap</td><td>OpenStreetMap Foundation</td><td>Mapas interactivos</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:8px">Cada servicio tiene su propia política de privacidad que te recomendamos consultar.</p>
+        </div>
+        <div class="card">
+          <h3>7. Derechos del usuario</h3>
+          <p>Como usuario, tienes derecho a:</p>
+          <ul style="padding-left:20px;line-height:2">
+            <li><strong>Acceso:</strong> solicitar qué datos tenemos sobre ti (en la práctica, no almacenamos datos personales).</li>
+            <li><strong>Rectificación:</strong> solicitar la corrección de datos incorrectos.</li>
+            <li><strong>Eliminación:</strong> solicitar la eliminación de datos personales que hayamos podido recopilar.</li>
+            <li><strong>Oposición:</strong> oponerte al uso de cookies de publicidad personalizadas configurando tu navegador o las opciones de Google.</li>
+          </ul>
+          <p style="margin-top:8px">Para ejercer estos derechos, escribe a <a href="mailto:diegonatylab@gmail.com">diegonatylab@gmail.com</a>.</p>
+        </div>
+        <div class="card">
+          <h3>8. Menores de edad</h3>
+          <p>Este sitio no está dirigido a menores de 13 años. No recopilamos deliberadamente información de menores. Si eres padre o tutor y crees que tu hijo nos ha proporcionado información, contáctanos para eliminarla.</p>
+        </div>
+        <div class="card">
+          <h3>9. Cambios en esta política</h3>
+          <p>Nos reservamos el derecho de actualizar esta política de privacidad en cualquier momento. Los cambios se publicarán en esta página con la fecha de la última actualización. Te recomendamos revisarla periódicamente.</p>
+        </div>
+        <div class="card">
+          <h3>10. Contacto</h3>
+          <p>Si tienes preguntas sobre esta política de privacidad o deseas ejercer tus derechos, puedes contactarnos en:</p>
+          <p style="margin-top:8px"><strong>Email:</strong> <a href="mailto:diegonatylab@gmail.com">diegonatylab@gmail.com</a></p>
+          <p style="margin-top:8px">Tiempo de respuesta estimado: 24 a 72 horas hábiles.</p>
         </div>`,
     });
   }
