@@ -1102,8 +1102,8 @@ export function avisoLegalPage(): string {
   // ============================================================
   export function contactoPage(): string {
     return layout({
-      title: `Contacto | ${SITE_NAME}`,
-      description: 'Ponte en contacto con el equipo de Buscar CP Mexico para soporte, correcciones de datos o consultas comerciales.',
+      title: `Contacto - Buscar CP México | Soporte, Correcciones y Consultas`,
+      description: 'Contacta al equipo de Buscar CP México para reportar errores en códigos postales, solicitar correcciones de datos, consultas comerciales o sugerencias.',
       canonical: '/contacto',
       breadcrumbs: [
         { name: 'Inicio', url: '/' },
@@ -1112,9 +1112,56 @@ export function avisoLegalPage(): string {
       body: `
         <div class="card">
           <h2>Contacto</h2>
-          <p>Si necesitas reportar un error, solicitar una corrección o hacer una consulta comercial, puedes escribirnos al siguiente correo:</p>
-          <p style="margin-top:12px"><strong>Email:</strong> <a href="mailto:diegonatylab@gmail.com">diegonatylab@gmail.com</a></p>
-          <p style="margin-top:12px">Tiempo estimado de respuesta: 24 a 72 horas hábiles.</p>
+          <p>¿Tienes una pregunta, encontraste un error o necesitas ayuda? Estamos aquí para ayudarte. Buscar CP México es un proyecto independiente y gratuito, y valoramos cada mensaje que recibimos de nuestros usuarios.</p>
+        </div>
+        <div class="card">
+          <h3>📧 Escríbenos</h3>
+          <p>La forma más rápida de contactarnos es por correo electrónico:</p>
+          <p style="margin-top:12px;font-size:1.1rem"><strong>Email:</strong> <a href="mailto:diegonatylab@gmail.com">diegonatylab@gmail.com</a></p>
+          <p style="margin-top:12px"><strong>Tiempo de respuesta:</strong> 24 a 72 horas hábiles.</p>
+        </div>
+        <div class="card">
+          <h3>¿Sobre qué puedes contactarnos?</h3>
+          <table>
+            <thead><tr><th>Motivo</th><th>Descripción</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Error en datos</strong></td><td>Si un código postal, colonia, municipio o estado aparece con información incorrecta o desactualizada.</td></tr>
+              <tr><td><strong>CP faltante</strong></td><td>Si buscas un código postal que debería existir pero no aparece en nuestra base de datos.</td></tr>
+              <tr><td><strong>Sugerencias</strong></td><td>Ideas para nuevas herramientas, mejoras en el sitio o funcionalidades que te gustaría ver.</td></tr>
+              <tr><td><strong>Consultas comerciales</strong></td><td>Propuestas de colaboración, integración de API o publicidad.</td></tr>
+              <tr><td><strong>Problemas técnicos</strong></td><td>Si el sitio no carga correctamente, el buscador no funciona o encuentras un error técnico.</td></tr>
+              <tr><td><strong>Privacidad</strong></td><td>Solicitudes relacionadas con tus datos personales según nuestra <a href="/politica-de-privacidad">política de privacidad</a>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>Tips para un reporte de error efectivo</h3>
+          <p>Si vas a reportar un error en los datos, incluir la siguiente información nos ayuda a corregirlo más rápido:</p>
+          <ul style="padding-left:20px;line-height:2">
+            <li>El <strong>código postal</strong> o <strong>URL de la página</strong> donde encontraste el error.</li>
+            <li>Qué dato es <strong>incorrecto</strong> (colonia mal escrita, municipio equivocado, CP inexistente, etc.).</li>
+            <li>Cuál debería ser el <strong>dato correcto</strong>, si lo conoces.</li>
+            <li>Opcionalmente, una <strong>fuente</strong> que respalde la corrección (recibo de CFE, sitio de SEPOMEX, etc.).</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Preguntas frecuentes antes de contactarnos</h3>
+          <h4 style="margin-top:12px">¿Cómo encuentro mi código postal?</h4>
+          <p>Usa nuestro <a href="/">buscador principal</a> escribiendo tu colonia o municipio, o prueba la <a href="/buscar-por-ubicacion">búsqueda por ubicación GPS</a>.</p>
+          <h4 style="margin-top:12px">¿Los datos son oficiales?</h4>
+          <p>Nuestra información proviene de fuentes públicas de SEPOMEX, pero no somos un sitio oficial del gobierno. Para datos críticos (facturación, trámites legales), verifica en el <a href="https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/Descarga.aspx" rel="nofollow noopener" target="_blank">sitio oficial de SEPOMEX</a>.</p>
+          <h4 style="margin-top:12px">¿El servicio tiene costo?</h4>
+          <p>No, Buscar CP México es completamente gratuito. El sitio se sostiene mediante publicidad.</p>
+          <h4 style="margin-top:12px">¿Puedo usar la información para mi negocio?</h4>
+          <p>Los datos de códigos postales provienen de fuentes públicas y puedes usarlos como referencia. Para uso masivo o integración, contáctanos.</p>
+        </div>
+        <div class="card">
+          <h3>Más información</h3>
+          <ul style="padding-left:20px;line-height:2">
+            <li><a href="/acerca-de">Acerca de nosotros</a> — Conoce el proyecto, nuestras herramientas y fuentes de datos.</li>
+            <li><a href="/politica-de-privacidad">Política de privacidad</a> — Cómo protegemos tu información.</li>
+            <li><a href="/aviso-legal">Aviso legal</a> — Términos y condiciones de uso del sitio.</li>
+          </ul>
         </div>`,
     });
   }
