@@ -49,7 +49,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v21',
+    cacheName: 'buscarcpmexico-v22',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -58,13 +58,27 @@ app.use(
 // HOME
 // ============================================================
 app.get('/', async (c) => {
-  const estados = await c.env.DB.prepare(`
-    SELECT e.nombre, e.slug, COUNT(DISTINCT cp.codigo_postal) as count
-    FROM estados e
-    LEFT JOIN codigos_postales cp ON cp.clave_estado = e.clave
-    GROUP BY e.clave
-    ORDER BY e.nombre
-  `).all();
+  const [estados, statsRow] = await Promise.all([
+    c.env.DB.prepare(`
+      SELECT e.nombre, e.slug, COUNT(DISTINCT cp.codigo_postal) as count
+      FROM estados e
+      LEFT JOIN codigos_postales cp ON cp.clave_estado = e.clave
+      GROUP BY e.clave
+      ORDER BY e.nombre
+    `).all(),
+    c.env.DB.prepare(`
+      SELECT COUNT(DISTINCT codigo_postal) as totalCPs,
+             COUNT(DISTINCT colonia) as totalColonias,
+             COUNT(DISTINCT municipio) as totalMunicipios
+      FROM codigos_postales
+    `).first(),
+  ]);
+
+  const stats = {
+    totalCPs: (statsRow as any)?.totalCPs || 0,
+    totalColonias: (statsRow as any)?.totalColonias || 0,
+    totalMunicipios: (statsRow as any)?.totalMunicipios || 0,
+  };
 
   return c.html(
     homePage(
@@ -72,7 +86,8 @@ app.get('/', async (c) => {
         nombre: e.nombre,
         slug: e.slug,
         count: e.count || 0,
-      }))
+      })),
+      stats
     )
   );
 });
