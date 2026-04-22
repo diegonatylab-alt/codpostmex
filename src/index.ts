@@ -49,7 +49,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v22',
+    cacheName: 'buscarcpmexico-v23',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
