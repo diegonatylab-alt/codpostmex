@@ -450,7 +450,7 @@ export function homePage(
 export function estadoPage(
   estado: { nombre: string; slug: string },
   municipios: { nombre: string; slug: string; count: number }[],
-  stats: { totalCPs: number; cpMin: string; cpMax: string }
+  stats: { totalCPs: number; cpMin: string; cpMax: string; totalColonias: number; prefijos: string[]; zonaHoraria: { nombre: string; utc: string } }
 ): string {
   const munGrid = municipios
     .map(
@@ -459,25 +459,107 @@ export function estadoPage(
     )
     .join('');
 
+  const topMunicipios = [...municipios].sort((a, b) => b.count - a.count).slice(0, 5);
+  const prefijosLinks = stats.prefijos.map(p => `<a href="/codigos-postales/${p}">${p}</a>`).join(', ');
+
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `¿Cuántos códigos postales tiene ${estado.nombre}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `${estado.nombre} tiene ${stats.totalCPs.toLocaleString('es-MX')} códigos postales distribuidos en ${municipios.length} municipios y ${stats.totalColonias.toLocaleString('es-MX')} colonias. Los CPs van del ${stats.cpMin} al ${stats.cpMax}.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `¿Cuál es el código postal de la capital de ${estado.nombre}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `Para encontrar el código postal de la capital de ${estado.nombre}, busca el municipio correspondiente en la lista de esta página o usa nuestro buscador ingresando el nombre de la colonia. Los CPs de ${estado.nombre} usan los prefijos ${stats.prefijos.join(', ')}.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `¿Qué zona horaria tiene ${estado.nombre}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `${estado.nombre} se encuentra en la zona horaria ${stats.zonaHoraria.nombre} (${stats.zonaHoraria.utc}). Puedes consultar la hora actual de cualquier código postal en nuestra herramienta de zona horaria.`,
+        },
+      },
+    ],
+  };
+
   return layout({
     title: `Códigos Postales de ${estado.nombre} 2026 - Todos los Municipios y Colonias`,
-    description: `Encuentra todos los códigos postales de ${estado.nombre}, México. Lista completa de municipios, colonias y CPs actualizados 2026.`,
+    description: `${stats.totalCPs.toLocaleString('es-MX')} códigos postales de ${estado.nombre}, México. ${municipios.length} municipios, ${stats.totalColonias.toLocaleString('es-MX')} colonias. CPs del ${stats.cpMin} al ${stats.cpMax}. Lista actualizada 2026.`,
     canonical: `/estado/${estado.slug}`,
     breadcrumbs: [
       { name: 'Inicio', url: '/' },
       { name: 'Estados', url: '/estados' },
       { name: estado.nombre, url: `/estado/${estado.slug}` },
     ],
+    structuredData,
     body: `
       <div class="card">
         <h2>Códigos Postales de ${escapeHtml(estado.nombre)}</h2>
-        <p>El estado de ${escapeHtml(estado.nombre)} cuenta con ${municipios.length} municipios y un total de ${stats.totalCPs.toLocaleString('es-MX')} códigos postales, que van del CP ${escapeHtml(stats.cpMin)} al ${escapeHtml(stats.cpMax)}. Selecciona un municipio para consultar todas sus colonias y códigos postales.</p>
-        <p style="margin-top:12px">Los códigos postales de ${escapeHtml(estado.nombre)} son asignados por el Servicio Postal Mexicano (SEPOMEX) y se utilizan para identificar zonas de entrega de correspondencia, envíos de paquetería y trámites oficiales en cada municipio del estado.</p>
+        <p>El estado de <strong>${escapeHtml(estado.nombre)}</strong> cuenta con <strong>${municipios.length} municipios</strong>, <strong>${stats.totalColonias.toLocaleString('es-MX')} colonias</strong> y un total de <strong>${stats.totalCPs.toLocaleString('es-MX')} códigos postales</strong>, que van del CP <strong>${escapeHtml(stats.cpMin)}</strong> al <strong>${escapeHtml(stats.cpMax)}</strong>.</p>
+        <p style="margin-top:8px">Los códigos postales de ${escapeHtml(estado.nombre)} son asignados por el Servicio Postal Mexicano (SEPOMEX) y se utilizan para identificar zonas de entrega de correspondencia, envíos de paquetería y trámites oficiales en cada municipio del estado.</p>
+        <div class="info-grid" style="margin-top:16px">
+          <div class="info-item"><div class="info-label">Municipios</div><div class="info-value">${municipios.length}</div></div>
+          <div class="info-item"><div class="info-label">Códigos Postales</div><div class="info-value">${stats.totalCPs.toLocaleString('es-MX')}</div></div>
+          <div class="info-item"><div class="info-label">Colonias</div><div class="info-value">${stats.totalColonias.toLocaleString('es-MX')}</div></div>
+          <div class="info-item"><div class="info-label">Rango de CPs</div><div class="info-value">${escapeHtml(stats.cpMin)} – ${escapeHtml(stats.cpMax)}</div></div>
+          <div class="info-item"><div class="info-label">Prefijos</div><div class="info-value">${prefijosLinks}</div></div>
+          <div class="info-item"><div class="info-label">Zona Horaria</div><div class="info-value">${escapeHtml(stats.zonaHoraria.nombre)} (${escapeHtml(stats.zonaHoraria.utc)})</div></div>
+        </div>
       </div>
       ${adSlot('estado-top')}
       <div class="card">
         <h2>Municipios de ${escapeHtml(estado.nombre)}</h2>
+        <p>Selecciona un municipio para ver todas sus colonias y códigos postales.</p>
         <div class="grid">${munGrid}</div>
+      </div>
+      ${adSlot('estado-mid')}
+      <div class="card">
+        <h3>Municipios con más códigos postales en ${escapeHtml(estado.nombre)}</h3>
+        <table>
+          <thead><tr><th>Municipio</th><th>Códigos Postales</th></tr></thead>
+          <tbody>${topMunicipios.map(m => `<tr><td><a href="/estado/${estado.slug}/${m.slug}">${escapeHtml(m.nombre)}</a></td><td>${m.count.toLocaleString('es-MX')}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>¿Cómo encontrar un código postal en ${escapeHtml(estado.nombre)}?</h3>
+        <p>Existen varias formas de encontrar el código postal que necesitas:</p>
+        <ol style="padding-left:20px;line-height:2">
+          <li><strong>Por municipio:</strong> selecciona tu municipio de la lista anterior y busca tu colonia en la tabla de resultados.</li>
+          <li><strong>Por colonia:</strong> usa el <a href="/">buscador principal</a> e ingresa el nombre de tu colonia directamente.</li>
+          <li><strong>Por ubicación:</strong> si estás en ${escapeHtml(estado.nombre)}, usa la <a href="/buscar-por-ubicacion">búsqueda por GPS</a> para encontrar el CP más cercano.</li>
+          <li><strong>Por prefijo:</strong> los CPs de ${escapeHtml(estado.nombre)} usan los prefijos ${prefijosLinks}. Explóralos en la sección de <a href="/codigos-postales">prefijos</a>.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Preguntas frecuentes</h3>
+        <h4 style="margin-top:12px">¿Cuántos códigos postales tiene ${escapeHtml(estado.nombre)}?</h4>
+        <p>${escapeHtml(estado.nombre)} tiene <strong>${stats.totalCPs.toLocaleString('es-MX')}</strong> códigos postales que cubren <strong>${stats.totalColonias.toLocaleString('es-MX')}</strong> colonias en <strong>${municipios.length}</strong> municipios. Los códigos van del ${escapeHtml(stats.cpMin)} al ${escapeHtml(stats.cpMax)}.</p>
+        <h4 style="margin-top:12px">¿Qué prefijos de CP corresponden a ${escapeHtml(estado.nombre)}?</h4>
+        <p>Los códigos postales de ${escapeHtml(estado.nombre)} comienzan con los prefijos ${prefijosLinks}. Los primeros dos dígitos del CP indican el estado o región.</p>
+        <h4 style="margin-top:12px">¿Qué zona horaria tiene ${escapeHtml(estado.nombre)}?</h4>
+        <p>${escapeHtml(estado.nombre)} está en la zona horaria <strong>${escapeHtml(stats.zonaHoraria.nombre)}</strong> (${escapeHtml(stats.zonaHoraria.utc)}). Consulta la hora actual de cualquier CP en nuestra herramienta de <a href="/zona-horaria">zona horaria</a>.</p>
+        <h4 style="margin-top:12px">¿Cuál es el municipio con más códigos postales?</h4>
+        <p>El municipio con más CPs en ${escapeHtml(estado.nombre)} es <strong><a href="/estado/${estado.slug}/${topMunicipios[0].slug}">${escapeHtml(topMunicipios[0].nombre)}</a></strong> con ${topMunicipios[0].count.toLocaleString('es-MX')} códigos postales.</p>
+      </div>
+      <div class="card">
+        <h3>Herramientas útiles para ${escapeHtml(estado.nombre)}</h3>
+        <div class="tools-grid">
+          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un CP de ${escapeHtml(estado.nombre)} existe</small></a>
+          <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra tu CP por GPS</small></a>
+          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km entre dos CPs</small></a>
+          <a href="/zona-horaria"><strong>Zona Horaria</strong><br><small>Hora actual por CP</small></a>
+        </div>
       </div>
       ${adSlot('estado-bottom')}`,
   });
