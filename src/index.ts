@@ -20,7 +20,7 @@ import {
   distanciaCPPage,
   zonaHorariaPage,
 } from './templates';
-import { slugify, SITE_URL, getZonaHoraria } from './config';
+import { slugify, SITE_URL, getZonaHoraria, ZONAS_HORARIAS } from './config';
 
 type Bindings = {
   DB: D1Database;
@@ -49,7 +49,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v24',
+    cacheName: 'buscarcpmexico-v25',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -137,7 +137,7 @@ app.get('/estado/:slug', async (c) => {
 
   if (!estado) return c.html(notFoundPage(), 404);
 
-  const [municipios, estadoStats] = await Promise.all([
+  const [municipios, estadoStats, prefijosRow, totalColoniasRow] = await Promise.all([
     c.env.DB.prepare(`
       SELECT m.nombre, m.slug, COUNT(DISTINCT cp.codigo_postal) as count
       FROM municipios m
@@ -157,12 +157,26 @@ app.get('/estado/:slug', async (c) => {
     `)
       .bind(estado.clave)
       .first(),
+    c.env.DB.prepare(`
+      SELECT DISTINCT SUBSTR(codigo_postal, 1, 2) as prefijo
+      FROM codigos_postales WHERE clave_estado = ? ORDER BY prefijo
+    `)
+      .bind(estado.clave)
+      .all(),
+    c.env.DB.prepare(`
+      SELECT COUNT(DISTINCT colonia) as total FROM codigos_postales WHERE clave_estado = ?
+    `)
+      .bind(estado.clave)
+      .first(),
   ]);
 
   const stats = {
     totalCPs: (estadoStats?.total_cps as number) || 0,
     cpMin: (estadoStats?.cp_min as string) || '',
     cpMax: (estadoStats?.cp_max as string) || '',
+    totalColonias: (totalColoniasRow?.total as number) || 0,
+    prefijos: (prefijosRow.results as any[]).map(r => r.prefijo as string),
+    zonaHoraria: getZonaHoraria(estado.clave as string),
   };
 
   return c.html(
