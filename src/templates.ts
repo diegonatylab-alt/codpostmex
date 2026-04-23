@@ -572,9 +572,8 @@ export function municipioPage(
   estado: { nombre: string; slug: string },
   municipio: { nombre: string; slug: string },
   codigos: { codigo_postal: string; colonia: string; tipo_asentamiento: string; zona: string }[],
-  stats: { totalCPs: number; urbanas: number; rurales: number; semiurbanas: number }
+  stats: { totalCPs: number; cpMin: string; cpMax: string; urbanas: number; rurales: number; semiurbanas: number; zonaHoraria: { nombre: string; utc: string } }
 ): string {
-  // Agrupar por código postal
   const rows = codigos
     .map(
       c =>
@@ -588,42 +587,127 @@ export function municipioPage(
     .join('');
 
   const uniqueCPs = [...new Set(codigos.map(c => c.codigo_postal))];
+  const uniqueColonias = [...new Set(codigos.map(c => c.colonia))];
 
   const zonaParts: string[] = [];
-  if (stats.urbanas > 0) zonaParts.push(`${stats.urbanas} son urbanas`);
-  if (stats.rurales > 0) zonaParts.push(`${stats.rurales} son rurales`);
-  if (stats.semiurbanas > 0) zonaParts.push(`${stats.semiurbanas} son semiurbanas`);
-  const zonaDesc = zonaParts.length > 0
-    ? zonaParts.slice(0, -1).join(', ') + (zonaParts.length > 1 ? ' y ' : '') + zonaParts[zonaParts.length - 1]
-    : '';
+  if (stats.urbanas > 0) zonaParts.push(`${stats.urbanas} urbanas`);
+  if (stats.rurales > 0) zonaParts.push(`${stats.rurales} rurales`);
+  if (stats.semiurbanas > 0) zonaParts.push(`${stats.semiurbanas} semiurbanas`);
+  const zonaDesc = zonaParts.join(', ');
+
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `¿Cuántos códigos postales tiene ${municipio.nombre}, ${estado.nombre}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `${municipio.nombre} tiene ${stats.totalCPs} códigos postales (del ${stats.cpMin} al ${stats.cpMax}) que cubren ${uniqueColonias.length} colonias. De ellas, ${zonaDesc}.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `¿Cómo encontrar el código postal de una colonia en ${municipio.nombre}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `Busca el nombre de tu colonia en la tabla de esta página o usa el buscador principal ingresando el nombre de la colonia y seleccionando ${estado.nombre}. Los CPs de ${municipio.nombre} van del ${stats.cpMin} al ${stats.cpMax}.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `¿Qué zona horaria tiene ${municipio.nombre}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `${municipio.nombre}, ${estado.nombre} está en la zona horaria ${stats.zonaHoraria.nombre} (${stats.zonaHoraria.utc}).`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `¿Cuál es el formato de dirección para ${municipio.nombre}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `El formato correcto es: Nombre, Calle y número, Col. [nombre de colonia], C.P. [código postal], ${municipio.nombre}, ${estado.nombre}, México.`,
+        },
+      },
+    ],
+  };
 
   return layout({
-    title: `Códigos Postales de ${municipio.nombre}, ${estado.nombre} - Colonias y CP 2026`,
-    description: `${uniqueCPs.length} códigos postales y ${codigos.length} colonias en ${municipio.nombre}, ${estado.nombre}. Lista actualizada 2026 con tipo de asentamiento y zona.`,
+    title: `Códigos Postales de ${municipio.nombre}, ${estado.nombre} - ${stats.totalCPs} CPs y ${uniqueColonias.length} Colonias 2026`,
+    description: `${stats.totalCPs} códigos postales y ${uniqueColonias.length} colonias en ${municipio.nombre}, ${estado.nombre}. CPs del ${stats.cpMin} al ${stats.cpMax}. Lista actualizada 2026.`,
     canonical: `/estado/${estado.slug}/${municipio.slug}`,
     breadcrumbs: [
       { name: 'Inicio', url: '/' },
       { name: estado.nombre, url: `/estado/${estado.slug}` },
       { name: municipio.nombre, url: `/estado/${estado.slug}/${municipio.slug}` },
     ],
+    structuredData,
     body: `
       <div class="card">
         <h2>Códigos Postales de ${escapeHtml(municipio.nombre)}, ${escapeHtml(estado.nombre)}</h2>
-        <p>${escapeHtml(municipio.nombre)} es un municipio del estado de ${escapeHtml(estado.nombre)} que cuenta con ${stats.totalCPs} códigos postales y ${codigos.length} colonias en total.</p>
-        <p style="margin-top:8px">De las ${codigos.length} colonias, ${zonaDesc}. Consulta la tabla completa para encontrar el código postal de la colonia que buscas.</p>
+        <p><strong>${escapeHtml(municipio.nombre)}</strong> es un municipio del estado de <strong>${escapeHtml(estado.nombre)}</strong> que cuenta con <strong>${stats.totalCPs} códigos postales</strong> y <strong>${uniqueColonias.length} colonias</strong>. Los códigos postales van del <strong>${escapeHtml(stats.cpMin)}</strong> al <strong>${escapeHtml(stats.cpMax)}</strong>.</p>
+        <p style="margin-top:8px">De las ${codigos.length} colonias registradas, ${zonaDesc}. Los CPs son asignados por SEPOMEX y se utilizan para envíos postales, paquetería y trámites oficiales.</p>
+        <div class="info-grid" style="margin-top:16px">
+          <div class="info-item"><div class="info-label">Códigos Postales</div><div class="info-value">${stats.totalCPs}</div></div>
+          <div class="info-item"><div class="info-label">Colonias</div><div class="info-value">${uniqueColonias.length}</div></div>
+          <div class="info-item"><div class="info-label">Rango de CPs</div><div class="info-value">${escapeHtml(stats.cpMin)} – ${escapeHtml(stats.cpMax)}</div></div>
+          <div class="info-item"><div class="info-label">Estado</div><div class="info-value"><a href="/estado/${estado.slug}">${escapeHtml(estado.nombre)}</a></div></div>
+          <div class="info-item"><div class="info-label">Zona Horaria</div><div class="info-value">${escapeHtml(stats.zonaHoraria.nombre)} (${escapeHtml(stats.zonaHoraria.utc)})</div></div>
+          <div class="info-item"><div class="info-label">Distribución</div><div class="info-value">${zonaDesc}</div></div>
+        </div>
       </div>
       ${adSlot('municipio-top')}
       <div class="card">
+        <h3>Todas las colonias y códigos postales de ${escapeHtml(municipio.nombre)}</h3>
+        <p>Tabla completa con las ${codigos.length} colonias del municipio. Haz clic en un CP o colonia para ver más detalles.</p>
         <table>
           <thead><tr><th>CP</th><th>Colonia</th><th>Tipo</th><th>Zona</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
-      ${adSlot('municipio-bottom')}
+      ${adSlot('municipio-mid')}
       <div class="card">
         <h3>¿Cómo encontrar un código postal en ${escapeHtml(municipio.nombre)}?</h3>
-        <p>Para encontrar el código postal de una colonia en ${escapeHtml(municipio.nombre)}, ${escapeHtml(estado.nombre)}, busca el nombre de tu colonia en la tabla anterior. Cada código postal de 5 dígitos identifica una o más colonias dentro del municipio. Si necesitas enviar correspondencia o paquetería, asegúrate de usar el código postal correcto de la colonia destino.</p>
-      </div>`,
+        <p>Existen varias formas de encontrar el código postal que necesitas en ${escapeHtml(municipio.nombre)}, ${escapeHtml(estado.nombre)}:</p>
+        <ol style="padding-left:20px;line-height:2">
+          <li><strong>Por colonia:</strong> busca el nombre de tu colonia en la tabla anterior. Cada CP de 5 dígitos identifica una o más colonias.</li>
+          <li><strong>Por buscador:</strong> usa el <a href="/">buscador principal</a> ingresando el nombre de tu colonia.</li>
+          <li><strong>Por ubicación:</strong> si estás en ${escapeHtml(municipio.nombre)}, usa la <a href="/buscar-por-ubicacion">búsqueda por GPS</a> para encontrar el CP más cercano.</li>
+          <li><strong>Por CP:</strong> si ya tienes un código postal, <a href="/validar-cp">valídalo aquí</a> para confirmar que es correcto.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>¿Cómo escribir una dirección en ${escapeHtml(municipio.nombre)}?</h3>
+        <div class="address-box address-box--example">
+          <div>[Nombre del destinatario]</div>
+          <div>[Calle y número]</div>
+          <div>Col. [Nombre de la colonia]</div>
+          <div>C.P. [Código postal], ${escapeHtml(municipio.nombre)}</div>
+          <div>${escapeHtml(estado.nombre)}, México</div>
+        </div>
+        <p style="margin-top:8px;font-size:.9rem">Consulta la <a href="/formato-direccion">guía completa de formato de dirección postal</a> para más detalles.</p>
+      </div>
+      <div class="card">
+        <h3>Preguntas frecuentes sobre ${escapeHtml(municipio.nombre)}</h3>
+        <h4 style="margin-top:12px">¿Cuántos códigos postales tiene ${escapeHtml(municipio.nombre)}?</h4>
+        <p>${escapeHtml(municipio.nombre)} tiene <strong>${stats.totalCPs}</strong> códigos postales que cubren <strong>${uniqueColonias.length}</strong> colonias. Los CPs van del ${escapeHtml(stats.cpMin)} al ${escapeHtml(stats.cpMax)}.</p>
+        <h4 style="margin-top:12px">¿Qué zona horaria tiene ${escapeHtml(municipio.nombre)}?</h4>
+        <p>${escapeHtml(municipio.nombre)}, ${escapeHtml(estado.nombre)} está en la zona horaria <strong>${escapeHtml(stats.zonaHoraria.nombre)}</strong> (${escapeHtml(stats.zonaHoraria.utc)}). Consulta la hora de cualquier CP en la <a href="/zona-horaria">herramienta de zona horaria</a>.</p>
+        <h4 style="margin-top:12px">¿Cómo se distribuyen las colonias?</h4>
+        <p>De las ${codigos.length} colonias en ${escapeHtml(municipio.nombre)}, ${zonaDesc}. Cada colonia tiene un tipo de asentamiento asignado por SEPOMEX (colonia, fraccionamiento, pueblo, barrio, etc.).</p>
+      </div>
+      <div class="card">
+        <h3>Herramientas útiles</h3>
+        <div class="tools-grid">
+          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si un CP de ${escapeHtml(municipio.nombre)} existe</small></a>
+          <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra tu CP por GPS</small></a>
+          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km entre dos CPs</small></a>
+          <a href="/zona-horaria"><strong>Zona Horaria</strong><br><small>Hora actual por CP</small></a>
+        </div>
+      </div>
+      ${adSlot('municipio-bottom')}`,
   });
 }
 
@@ -833,6 +917,15 @@ export function coloniaPage(
         en el estado de <strong>${escapeHtml(estado.nombre)}</strong>, México.
         Es un asentamiento de tipo <strong>${escapeHtml(first.tipo_asentamiento.toLowerCase())}</strong>
         ubicado en la zona <strong>${escapeHtml((first.zona || 'urbana').toLowerCase())}</strong>.</p>
+      </div>
+      <div class="card">
+        <h3>Herramientas útiles</h3>
+        <div class="tools-grid">
+          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si el CP ${uniqueCPs[0]} es correcto</small></a>
+          <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra tu CP por GPS</small></a>
+          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km entre dos CPs</small></a>
+          <a href="/zona-horaria"><strong>Zona Horaria</strong><br><small>Hora actual del CP ${uniqueCPs[0]}</small></a>
+        </div>
       </div>
       ${mapScript}`,
   });
@@ -1049,6 +1142,15 @@ export function codigoPostalPage(
         <h3>¿El CP ${cp} es zona urbana o rural?</h3>
         <p>El código postal ${cp} pertenece a la zona <strong>${escapeHtml((first.zona || 'urbana').toLowerCase())}</strong> 
         del municipio de ${escapeHtml(first.municipio)}, ${escapeHtml(first.estado)}.</p>
+      </div>
+      <div class="card">
+        <h3>Herramientas útiles</h3>
+        <div class="tools-grid">
+          <a href="/validar-cp"><strong>Validar CP</strong><br><small>Verifica si el CP ${cp} es correcto</small></a>
+          <a href="/buscar-por-ubicacion"><strong>CP por Ubicación</strong><br><small>Encuentra tu CP por GPS</small></a>
+          <a href="/distancia"><strong>Distancia entre CPs</strong><br><small>Calcula km desde el CP ${cp}</small></a>
+          <a href="/zona-horaria"><strong>Zona Horaria</strong><br><small>Hora actual del CP ${cp}</small></a>
+        </div>
       </div>
       ${mapScript}`,
   });
