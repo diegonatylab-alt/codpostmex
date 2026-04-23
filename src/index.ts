@@ -49,7 +49,7 @@ app.use('*', async (c, next) => {
 app.use(
   '*',
   cache({
-    cacheName: 'buscarcpmexico-v25',
+    cacheName: 'buscarcpmexico-v26',
     cacheControl: 'public, max-age=86400, s-maxage=86400',
   })
 );
@@ -226,6 +226,8 @@ app.get('/estado/:estadoSlug/:municipioSlug', async (c) => {
       .all(),
     c.env.DB.prepare(`
       SELECT COUNT(DISTINCT codigo_postal) as total_cps,
+             MIN(codigo_postal) as cp_min,
+             MAX(codigo_postal) as cp_max,
              SUM(CASE WHEN zona = 'Urbano' THEN 1 ELSE 0 END) as urbanas,
              SUM(CASE WHEN zona = 'Rural' THEN 1 ELSE 0 END) as rurales,
              SUM(CASE WHEN zona = 'Semiurbano' THEN 1 ELSE 0 END) as semiurbanas
@@ -238,9 +240,12 @@ app.get('/estado/:estadoSlug/:municipioSlug', async (c) => {
 
   const stats = {
     totalCPs: (municipioStats?.total_cps as number) || 0,
+    cpMin: (municipioStats?.cp_min as string) || '',
+    cpMax: (municipioStats?.cp_max as string) || '',
     urbanas: (municipioStats?.urbanas as number) || 0,
     rurales: (municipioStats?.rurales as number) || 0,
     semiurbanas: (municipioStats?.semiurbanas as number) || 0,
+    zonaHoraria: getZonaHoraria(estado.clave as string),
   };
 
   return c.html(
